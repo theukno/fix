@@ -3,7 +3,6 @@
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card"
 import { useToast } from "@/hooks/use-toast"
 
 export default function ManageAccount() {
@@ -36,36 +35,35 @@ export default function ManageAccount() {
   if (!user) {
     return (
       <div className="container max-w-md mx-auto py-12 px-4 text-center">
-        <Card>
-          <CardHeader>
-            <CardTitle>Session Expired</CardTitle>
-          </CardHeader>
-          <CardContent>
+        <div className="border rounded-lg p-8 shadow-lg">
+          <header className="mb-4">
+            <h2 className="text-xl font-semibold">Session Expired</h2>
+          </header>
+          <section className="mb-4">
             <p>Please log in again to manage your account.</p>
-          </CardContent>
-          <CardFooter>
+          </section>
+          <footer>
             <Button onClick={() => router.push("/account/page.tsx")}>Go to Login</Button>
-          </CardFooter>
-        </Card>
+          </footer>
+        </div>
       </div>
     )
   }
 
   return (
     <div className="container max-w-2xl mx-auto py-12 px-4">
-      <Card>
-        <CardHeader>
-          <CardTitle>Account Management</CardTitle>
-        </CardHeader>
-        <CardContent>
+      <div className="border rounded-lg p-8 shadow-lg">
+        <header className="mb-4">
+          <h2 className="text-xl font-semibold">Account Management</h2>
+        </header>
+        <section className="mb-4">
           <p><strong>Email:</strong> {user?.email}</p>
           <p><strong>Member Since:</strong> {new Date().toLocaleDateString()}</p>
-        </CardContent>
-        <CardFooter>
+        </section>
+        <footer>
           <Button variant="destructive" onClick={handleLogout}>Log Out</Button>
-        </CardFooter>
-      </Card>
+        </footer>
+      </div>
     </div>
   )
 }
-
