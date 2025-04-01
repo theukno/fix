@@ -39,7 +39,7 @@ export default function CartPage() {
       router.push("/app/account/page"); // Redirect to login page (remove `.tsx`)
     } else {
       console.log("User logged in, redirecting to payment page..."); // Debug log for routing
-      router.push("/app/checkout/page"); // Redirect to payment page (remove `.tsx`)
+      router.push("/page"); // Redirect to payment page (remove `.tsx`)
     }
   }
 
