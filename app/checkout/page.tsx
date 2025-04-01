@@ -1,19 +1,14 @@
 "use client"; // Ensures this file runs only on the client side
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation"; // For navigation
 import { Button } from "@/components/ui/button"; // UI Button component
-import dynamic from "next/dynamic"; // For dynamic imports
-
-// Dynamically import the PayPal button component (if using one)
-const PayPalButton = dynamic(() => import("@/components/PayPalButton"), {
-  ssr: false, // Prevents SSR errors
-});
 
 export default function CheckoutPage() {
   const [isPayPalLoaded, setIsPayPalLoaded] = useState(false);
   const router = useRouter();
 
+  // Logic to load PayPal script
   useEffect(() => {
     if (typeof window !== "undefined" && !window.paypal) {
       const script = document.createElement("script");
@@ -26,6 +21,11 @@ export default function CheckoutPage() {
     }
   }, []);
 
+  // Redirect to the gateway page when the user clicks "Complete Purchase"
+  const handleCompletePurchase = () => {
+    router.push("/paypal"); // Redirect to the payment gateway page
+  };
+
   return (
     <div className="container max-w-4xl mx-auto py-12 px-4">
       <h1 className="text-3xl font-bold mb-6">Checkout</h1>
@@ -36,6 +36,7 @@ export default function CheckoutPage() {
         {/* PayPal Button */}
         {isPayPalLoaded ? (
           <div id="paypal-button-container">
+            {/* Your dynamically imported PayPal button component */}
             <PayPalButton />
           </div>
         ) : (
@@ -43,7 +44,7 @@ export default function CheckoutPage() {
         )}
 
         {/* Fallback Checkout Button */}
-        <Button className="w-full mt-4" onClick={() => router.push("/app/checkout/paypalS")}>
+        <Button className="w-full mt-4" onClick={handleCompletePurchase}>
           Complete Purchase
         </Button>
       </div>
