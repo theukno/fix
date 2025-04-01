@@ -3,7 +3,6 @@
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
@@ -93,34 +92,34 @@ export default function AccountPage() {
     return (
       <div className="container max-w-4xl mx-auto py-12 px-4">
         <h1 className="text-3xl font-bold mb-8">My Account</h1>
-        <Card>
-          <CardHeader>
-            <CardTitle>Account Info</CardTitle>
-          </CardHeader>
-          <CardContent>
+        <div className="border rounded-lg p-8 shadow-lg">
+          <header className="mb-4">
+            <h2 className="text-xl font-semibold">Account Info</h2>
+          </header>
+          <section className="mb-4">
             <p className="text-sm text-muted-foreground mb-1">Email</p>
             <p className="font-medium mb-4">{user?.email}</p>
             <p className="text-sm text-muted-foreground mb-1">Member Since</p>
             <p className="font-medium">{new Date().toLocaleDateString()}</p>
-          </CardContent>
-          <CardFooter>
+          </section>
+          <footer>
             <Button variant="outline" className="w-full" onClick={handleLogout}>
               Log Out
             </Button>
-          </CardFooter>
-        </Card>
+          </footer>
+        </div>
       </div>
     )
   }
 
   return (
     <div className="container max-w-md mx-auto py-12 px-4">
-      <Card>
-        <CardHeader className="text-center">
-          <CardTitle className="text-2xl">Account Access</CardTitle>
-          <CardDescription>Sign in or create an account to continue</CardDescription>
-        </CardHeader>
-        <CardContent>
+      <div className="border rounded-lg p-8 shadow-lg">
+        <header className="text-center mb-4">
+          <h2 className="text-2xl font-semibold">Account Access</h2>
+          <p className="text-sm text-muted-foreground">Sign in or create an account to continue</p>
+        </header>
+        <section>
           <Tabs defaultValue="login">
             <TabsList className="grid w-full grid-cols-2 mb-4">
               <TabsTrigger value="login">Login</TabsTrigger>
@@ -181,8 +180,8 @@ export default function AccountPage() {
               </form>
             </TabsContent>
           </Tabs>
-        </CardContent>
-      </Card>
+        </section>
+      </div>
     </div>
   )
 }
