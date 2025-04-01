@@ -39,10 +39,10 @@ export default function CartPage() {
     console.log("Checkout clicked!");
     if (!isLoggedIn) {
       console.log("User not logged in, redirecting to login page...");
-      router.push("/app/account"); // ✅ Fixed route
+      router.push("/app/account/page"); // ✅ Fixed route
     } else {
       console.log("User logged in, redirecting to checkout page...");
-      router.push("/app/checkout"); // ✅ Redirect to checkout page
+      router.push("/app/checkout/page"); // ✅ Redirect to checkout page
     }
   };
 
