@@ -1,52 +1,114 @@
-"use client"; // Ensures this file runs only on the client side
+"use client"
 
-import { useEffect, useState } from "react"; // ✅ Ensure useEffect is imported
-import { useRouter } from "next/navigation";
-import { Button } from "@/components/ui/button";
-import dynamic from "next/dynamic";
-
-// Dynamically import the PayPal button component
-const PayPalButton = dynamic(() => import("@/components/PayPalButton"), {
-  ssr: false, // Prevents SSR errors
-});
+import { useEffect, useState } from "react"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Separator } from "@/components/ui/separator"
+import { PayPalScriptProvider, PayPalButtons } from "@paypal/react-paypal-js"
 
 export default function CheckoutPage() {
-  const [isPayPalLoaded, setIsPayPalLoaded] = useState(false);
-  const router = useRouter();
+  const [total, setTotal] = useState(99.99)
+  const [isClient, setIsClient] = useState(false)
 
   useEffect(() => {
-    if (typeof window !== "undefined" && !window.paypal) {
-      const script = document.createElement("script");
-      script.src = "https://www.paypal.com/sdk/js?client-id=YOUR_PAYPAL_CLIENT_ID";
-      script.async = true;
-      script.onload = () => setIsPayPalLoaded(true);
-      document.body.appendChild(script);
-    } else if (typeof window !== "undefined" && window.paypal) {
-      setIsPayPalLoaded(true);
-    }
-  }, []);
+    setIsClient(true)
+  }, [])
 
   return (
-    <div className="container max-w-4xl mx-auto py-12 px-4">
-      <h1 className="text-3xl font-bold mb-6">Checkout</h1>
+    <div className="container mx-auto py-10">
+      <h1 className="text-3xl font-bold mb-8">Checkout</h1>
 
-      <div className="p-6 border rounded-md shadow-md">
-        <h2 className="text-xl font-semibold mb-4">Payment Options</h2>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <div>
+          <Card>
+            <CardHeader>
+              <CardTitle>Shipping Information</CardTitle>
+              <CardDescription>Enter your shipping details</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="firstName">First Name</Label>
+                  <Input id="firstName" placeholder="John" />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="lastName">Last Name</Label>
+                  <Input id="lastName" placeholder="Doe" />
+                </div>
+              </div>
 
-        {/* PayPal Button */}
-        {isPayPalLoaded ? (
-          <div id="paypal-button-container">
-            <PayPalButton />
-          </div>
-        ) : (
-          <p>Loading PayPal...</p>
-        )}
+              <div className="space-y-2">
+                <Label htmlFor="address">Address</Label>
+                <Input id="address" placeholder="123 Main St" />
+              </div>
 
-        {/* Fallback Checkout Button */}
-        <Button className="w-full mt-4" onClick={() => router.push("/thank-you")}>
-          Complete Purchase
-        </Button>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="city">City</Label>
+                  <Input id="city" placeholder="New York" />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="zipCode">Zip Code</Label>
+                  <Input id="zipCode" placeholder="10001" />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        <div>
+          <Card>
+            <CardHeader>
+              <CardTitle>Order Summary</CardTitle>
+              <CardDescription>Review your order</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex justify-between">
+                <span>Product Total</span>
+                <span>${total.toFixed(2)}</span>
+              </div>
+              <div className="flex justify-between">
+                <span>Shipping</span>
+                <span>Free</span>
+              </div>
+              <Separator />
+              <div className="flex justify-between font-bold">
+                <span>Total</span>
+                <span>${total.toFixed(2)}</span>
+              </div>
+            </CardContent>
+            <CardFooter className="flex flex-col">
+              {isClient && (
+                <PayPalScriptProvider options={{ clientId: "test" }}>
+                  <PayPalButtons
+                    style={{ layout: "vertical" }}
+                    createOrder={(data, actions) => {
+                      return actions.order.create({
+                        purchase_units: [
+                          {
+                            amount: {
+                              value: total.toString(),
+                            },
+                          },
+                        ],
+                      })
+                    }}
+                    onApprove={(data, actions) => {
+                      return actions.order.capture().then((details) => {
+                        alert("Transaction completed by " + details.payer.name.given_name)
+                      })
+                    }}
+                  />
+                </PayPalScriptProvider>
+              )}
+              <Button className="w-full mt-4">Complete Order</Button>
+            </CardFooter>
+          </Card>
+        </div>
       </div>
     </div>
-  );
+  )
 }
+
