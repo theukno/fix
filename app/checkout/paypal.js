@@ -1,12 +1,7 @@
 import React, { useEffect } from "react";
 import { PayPalScriptProvider, PayPalButtons } from "@paypal/react-paypal-js";
-import { useLocation, useNavigate } from "react-router-dom";
 
 const PayPal = () => {
-  const location = useLocation();
-  const navigate = useNavigate();
-  let username = sessionStorage.getItem('username');
-  const plan = location.state?.plan || "No file selected";
   const clientId = "AZz1Rm-UFpfhQNhvTBWUMFVuFGKdmMeY-fPkcdDe7FpgU2o1G4n33frFvsBolbStXvOmfZcY_vSXi_XL";
   const initialOptions = {
     "client-id": clientId,
