@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useCart } from "@/components/cart-provider"
 import { useRouter } from "next/navigation" // Import useRouter
 import { Button } from "@/components/ui/button"
@@ -25,14 +25,21 @@ export default function CartPage() {
   const [isLoggedIn, setIsLoggedIn] = useState(false) // Placeholder for login state
   const router = useRouter() // Initialize router
 
+  useEffect(() => {
+    const sessionEmail = localStorage.getItem("sessionEmail")
+    if (sessionEmail) {
+      setIsLoggedIn(true) // Update state if user is logged in
+    }
+  }, [])
+
   const handleCheckout = () => {
     console.log("Checkout clicked!"); // Debug log to track click
     if (!isLoggedIn) {
       console.log("User not logged in, redirecting to login page..."); // Debug log for redirection
-      router.push("/app/account/page.tsx"); // Redirect to login page
+      router.push("/app/account/page.tsx"); // Redirect to login page (remove `.tsx`)
     } else {
       console.log("User logged in, redirecting to payment page..."); // Debug log for routing
-      router.push("/app/checkout/page.tsx"); // Redirect to payment page
+      router.push("/app/checkout/page.tsx"); // Redirect to payment page (remove `.tsx`)
     }
   }
 
