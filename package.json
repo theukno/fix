@@ -61,7 +61,8 @@
     "pg-native": "latest",
     "ai": "latest",
     "@ai-sdk/openai": "latest",
-    "pg": "latest"
+    "pg": "latest",
+    "@paypal/react-paypal-js": "^7.7.0
   },
   "devDependencies": {
     "@types/node": "^22",
