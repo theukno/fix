@@ -170,7 +170,13 @@ const ProductPage = ({ mood }: { mood: string }) => {
   const product = getProduct(mood);
 
   const handleAddToCart = () => {
-    addToCart(product);
+    addToCart({
+      id: product.id,
+      name: product.name,
+      price: product.price,
+      image: product.image,
+    })
+    
     alert("Product added to cart!");
   };
 
