@@ -1,6 +1,6 @@
 "use client"; // Ensures this file runs only on the client side
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation"; // For navigation
 import { Button } from "@/components/ui/button"; // UI Button component
 
