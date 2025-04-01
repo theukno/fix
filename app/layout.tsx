@@ -13,40 +13,26 @@ const inter = Inter({ subsets: ["latin"] })
 export const metadata = {
   title: "Mood Shop - Personalized Shopping Based on Your Mood",
   description: "Discover products that match your mood and enhance your wellbeing.",
-    generator: 'v0.dev'
+  generator: "v0.dev",
 }
 
-export default function RootLayout({
-  children,
-}: Readonly<{
-  children: React.ReactNode
-}>) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={inter.className}>
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
           <CartProvider>
-            <div className="flex flex-col min-h-screen">
-              <Navbar />
-              <main className="flex-1">{children}</main>
-              <Footer />
-            </div>
-            <Toaster />
+            <PayPalProvider>
+              <div className="flex flex-col min-h-screen">
+                <Navbar />
+                <main className="flex-1">{children}</main>
+                <Footer />
+              </div>
+              <Toaster />
+            </PayPalProvider>
           </CartProvider>
         </ThemeProvider>
       </body>
     </html>
   )
 }
-
-export default function Layout({ children }: { children: React.ReactNode }) {
-  return (
-    <PayPalProvider>
-      {children}
-    </PayPalProvider>
-  );
-}
-
-
-
-import './globals.css'
