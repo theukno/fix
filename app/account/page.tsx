@@ -47,7 +47,7 @@ export default function AccountPage() {
       title: "Login Successful",
       description: "You are now logged in.",
     })
-    router.push("/account/manage") // Redirect to account management page after login
+    router.push("/account/manage.tsx") // Redirect to account management page after login
   }
 
   const handleSignup = async (e: React.FormEvent) => {
@@ -74,7 +74,7 @@ export default function AccountPage() {
     setUser({ email })
 
     // Redirect to the account management page after signup
-    router.push("/account/manage")
+    router.push("/account/manage.tsx")
   }
 
   const handleLogout = async () => {
@@ -85,7 +85,7 @@ export default function AccountPage() {
       title: "Logged Out",
       description: "You have been logged out successfully.",
     })
-    router.push("/account") // Redirect to the login page after logout
+    router.push("/account/page.tsx") // Redirect to the login page after logout
   }
 
   if (isLoggedIn) {
