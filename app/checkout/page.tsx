@@ -43,7 +43,7 @@ export default function CheckoutPage() {
         )}
 
         {/* Fallback Checkout Button */}
-        <Button className="w-full mt-4" onClick={() => router.push("/thank-you")}>
+        <Button className="w-full mt-4" onClick={() => router.push("/app/checkout/paypalS")}>
           Complete Purchase
         </Button>
       </div>
