@@ -20,7 +20,7 @@ const PayPal = () => {
               intent: "CAPTURE",
               purchase_units: [
                 {
-                  amount: { value: plan },
+                  amount: { value: "15" },
                 },
               ],
               application_context: {
