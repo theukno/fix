@@ -155,15 +155,15 @@ const ProductPage = ({ mood }: { mood: string }) => {
   const getProduct = (mood: string) => {
     switch (mood) {
       case "sad":
-        return { name: "Comfort Blanket", description: "A soft blanket to keep you cozy.", price: 20.00 };
+        return { id: 1, name: "Comfort Blanket", description: "A soft blanket to keep you cozy.", price: 20.00 };
       case "calm":
-        return { name: "Meditation Kit", description: "A set for peaceful meditation.", price: 35.00 };
+        return { id: 2, name: "Meditation Kit", description: "A set for peaceful meditation.", price: 35.00 };
       case "energetic":
-        return { name: "Fitness Equipment", description: "Equipment to get your energy flowing.", price: 50.00 };
+        return { id: 3, name: "Fitness Equipment", description: "Equipment to get your energy flowing.", price: 50.00 };
       case "happy":
-        return { name: "Creative Set", description: "A set for your next fun project.", price: 30.00 };
+        return { id: 4, name: "Creative Set", description: "A set for your next fun project.", price: 30.00 };
       default:
-        return { name: "Mystery Product", description: "A product tailored to your mood.", price: 25.00 };
+        return { id: 5, name: "Mystery Product", description: "A product tailored to your mood.", price: 25.00 };
     }
   };
 
@@ -174,9 +174,9 @@ const ProductPage = ({ mood }: { mood: string }) => {
       id: product.id,
       name: product.name,
       price: product.price,
-      image: product.image,
-    })
-    
+      image: product.image || "https://via.placeholder.com/150", // Placeholder if no image
+    });
+
     alert("Product added to cart!");
   };
 
