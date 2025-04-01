@@ -1,20 +1,16 @@
-// app/paypal/components/PayPalButton.tsx
-
-"use client"  // Ensure this runs only on the client side
-
-import { PayPalScriptProvider, PayPalButtons } from "@paypal/react-paypal-js"
-
-interface PayPalButtonProps {
-  amount: string
-  onSuccess: () => void
-  onError: () => void
-}
+"use client"; // Ensure this runs only on the client side
 
 import { PayPalScriptProvider, PayPalButtons } from "@paypal/react-paypal-js";
 
-const PayPalButton = ({ amount }) => {
+interface PayPalButtonProps {
+  amount: string;
+  onSuccess: (details: any) => void;
+  onError: (error: any) => void;
+}
+
+const PayPalButton: React.FC<PayPalButtonProps> = ({ amount, onSuccess, onError }) => {
     return (
-        <PayPalScriptProvider options={{ "client-id": "YOUR_PAYPAL_CLIENT_ID" }}>
+        <PayPalScriptProvider options={{ "client-id": process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID || "" }}>
             <PayPalButtons
                 style={{ layout: "vertical" }}
                 createOrder={(data, actions) => {
@@ -22,7 +18,7 @@ const PayPalButton = ({ amount }) => {
                         purchase_units: [
                             {
                                 amount: {
-                                    value: amount, // Dynamic value
+                                    value: amount,
                                 },
                             },
                         ],
@@ -30,8 +26,12 @@ const PayPalButton = ({ amount }) => {
                 }}
                 onApprove={(data, actions) => {
                     return actions.order.capture().then((details) => {
-                        alert("Transaction completed by " + details.payer.name.given_name);
+                        onSuccess(details); // Call the success callback
                     });
+                }}
+                onError={(err) => {
+                    console.error("PayPal Error:", err);
+                    onError(err); // Call the error callback
                 }}
             />
         </PayPalScriptProvider>
