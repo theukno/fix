@@ -6,6 +6,7 @@ import { Navbar } from "@/components/navbar"
 import { Footer } from "@/components/footer"
 import { CartProvider } from "@/components/cart-provider"
 import { Toaster } from "@/components/ui/toaster"
+import PayPalProvider from "@/components/PayPalProvider";
 
 const inter = Inter({ subsets: ["latin"] })
 
@@ -36,6 +37,14 @@ export default function RootLayout({
       </body>
     </html>
   )
+}
+
+export default function Layout({ children }: { children: React.ReactNode }) {
+  return (
+    <PayPalProvider>
+      {children}
+    </PayPalProvider>
+  );
 }
 
 
