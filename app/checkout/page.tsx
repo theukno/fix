@@ -1,33 +1,12 @@
 "use client";
 
-import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { useCart } from "@/components/cart-provider";
-import jsPDF from "jspdf";
-import "jspdf-autotable";
 
 export default function InvoicePage() {
   const router = useRouter();
   const { cartItems, subtotal } = useCart();
-
-  const generateInvoice = () => {
-    const doc = new jsPDF();
-    doc.setFontSize(18);
-    doc.text("Invoice", 14, 20);
-    doc.setFontSize(12);
-    doc.text("Order Summary:", 14, 30);
-
-    const tableData = cartItems.map((item) => [item.name, item.quantity, `$${(item.price * item.quantity).toFixed(2)}`]);
-    doc.autoTable({
-      head: [["Item", "Quantity", "Price"]],
-      body: tableData,
-      startY: 40,
-    });
-
-    doc.text(`Total: $${subtotal.toFixed(2)}`, 14, doc.autoTable.previous.finalY + 10);
-    doc.save("invoice.pdf");
-  };
 
   const handlePayment = async () => {
     try {
@@ -66,9 +45,6 @@ export default function InvoicePage() {
         </div>
       </div>
       <div className="mt-6 flex gap-4">
-        <Button onClick={generateInvoice} className="bg-gray-500 hover:bg-gray-600 text-white">
-          Download Invoice
-        </Button>
         <Button onClick={handlePayment} className="bg-blue-500 hover:bg-blue-600 text-white">
           Make Payment
         </Button>
