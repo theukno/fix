@@ -2,116 +2,77 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { PayPalScriptProvider, PayPalButtons } from "@paypal/react-paypal-js";
 import { Button } from "@/components/ui/button";
-import { useToast } from "@/hooks/use-toast";
 import { useCart } from "@/components/cart-provider";
-import { CheckCircle2 } from "lucide-react";
+import jsPDF from "jspdf";
+import "jspdf-autotable";
 
-export default function CheckoutPage() {
+export default function InvoicePage() {
   const router = useRouter();
-  const { toast } = useToast();
-  const { cartItems, subtotal, clearCart } = useCart();
-  const [isComplete, setIsComplete] = useState(false);
-  const [showPayPal, setShowPayPal] = useState(false); // State to show PayPal buttons
+  const { cartItems, subtotal } = useCart();
 
-  const handleCheckoutClick = () => {
-    setShowPayPal(true); // Show PayPal buttons when checkout is clicked
-  };
+  const generateInvoice = () => {
+    const doc = new jsPDF();
+    doc.setFontSize(18);
+    doc.text("Invoice", 14, 20);
+    doc.setFontSize(12);
+    doc.text("Order Summary:", 14, 30);
 
-  const handlePaymentSuccess = (details) => {
-    setIsComplete(true);
-    clearCart();
-
-    toast({
-      title: "Payment Successful",
-      description: `Thank you, ${details.payer.name.given_name}! Your order has been placed.`,
+    const tableData = cartItems.map((item) => [item.name, item.quantity, `$${(item.price * item.quantity).toFixed(2)}`]);
+    doc.autoTable({
+      head: [["Item", "Quantity", "Price"]],
+      body: tableData,
+      startY: 40,
     });
 
-    setTimeout(() => router.push("/checkout/confirmation"), 2000);
+    doc.text(`Total: $${subtotal.toFixed(2)}`, 14, doc.autoTable.previous.finalY + 10);
+    doc.save("invoice.pdf");
   };
 
-  const handlePaymentError = (err) => {
-    console.error("PayPal Checkout Error:", err);
-    toast({
-      title: "Payment Failed",
-      description: "Something went wrong. Please try again.",
-      variant: "destructive",
-    });
+  const handlePayment = async () => {
+    try {
+      const response = await fetch("/api/paypal/create-order", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ amount: subtotal.toFixed(2) }),
+      });
+      const data = await response.json();
+      if (data?.approvalUrl) {
+        window.location.href = data.approvalUrl;
+      } else {
+        throw new Error("Failed to get PayPal approval URL");
+      }
+    } catch (error) {
+      console.error("PayPal Payment Error:", error);
+    }
   };
-
-  const handlePaymentCancel = () => {
-    toast({
-      title: "Payment Cancelled",
-      description: "You have cancelled the payment process.",
-    });
-  };
-
-  if (cartItems.length === 0 && !isComplete) {
-    router.push("/cart");
-    return null;
-  }
 
   return (
-    <PayPalScriptProvider options={{ "client-id": "YOUR_REAL_PAYPAL_CLIENT_ID", currency: "USD" }}>
-      <div className="container max-w-4xl mx-auto py-12 px-4">
-        <h1 className="text-3xl font-bold mb-8">Checkout</h1>
-
-        {isComplete ? (
-          <div className="text-center">
-            <CheckCircle2 className="h-16 w-16 text-green-500 mx-auto" />
-            <h2 className="text-2xl font-semibold">Order Confirmed!</h2>
-            <p>Thank you for your purchase.</p>
-            <Button className="mt-4" onClick={() => router.push("/")}>Return to Home</Button>
+    <div className="container max-w-4xl mx-auto py-12 px-4">
+      <h1 className="text-3xl font-bold mb-8">Invoice</h1>
+      <div className="p-6 border rounded-md shadow-md">
+        <h2 className="text-xl font-semibold mb-4">Order Summary</h2>
+        {cartItems.map((item) => (
+          <div key={item.id} className="flex justify-between mb-2">
+            <span>{item.name} x{item.quantity}</span>
+            <span>${(item.price * item.quantity).toFixed(2)}</span>
           </div>
-        ) : (
-          <div className="grid gap-8 md:grid-cols-3">
-            <div className="md:col-span-2">
-              <div className="p-6 border rounded-md shadow-md">
-                <h2 className="text-xl font-semibold mb-4">Payment</h2>
-                {!showPayPal ? (
-                  <Button onClick={handleCheckoutClick} className="w-full">
-                    Proceed to Checkout
-                  </Button>
-                ) : (
-                  <PayPalButtons
-                    createOrder={(data, actions) => {
-                      return actions.order.create({
-                        purchase_units: [
-                          {
-                            amount: { value: subtotal.toFixed(2) },
-                          },
-                        ],
-                      });
-                    }}
-                    onApprove={(data, actions) => {
-                      return actions.order.capture().then(handlePaymentSuccess);
-                    }}
-                    onError={handlePaymentError}
-                    onCancel={handlePaymentCancel}
-                  />
-                )}
-              </div>
-            </div>
-
-            <div>
-              <div className="p-6 border rounded-md shadow-md">
-                <h2 className="text-xl font-semibold mb-4">Order Summary</h2>
-                {cartItems.map((item) => (
-                  <div key={item.id} className="flex justify-between mb-2">
-                    <span>{item.name} x{item.quantity}</span>
-                    <span>${(item.price * item.quantity).toFixed(2)}</span>
-                  </div>
-                ))}
-                <div className="flex justify-between font-medium text-lg">
-                  <span>Total</span>
-                  <span>${subtotal.toFixed(2)}</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
+        ))}
+        <div className="flex justify-between font-medium text-lg">
+          <span>Total</span>
+          <span>${subtotal.toFixed(2)}</span>
+        </div>
       </div>
-    </PayPalScriptProvider>
+      <div className="mt-6 flex gap-4">
+        <Button onClick={generateInvoice} className="bg-gray-500 hover:bg-gray-600 text-white">
+          Download Invoice
+        </Button>
+        <Button onClick={handlePayment} className="bg-blue-500 hover:bg-blue-600 text-white">
+          Make Payment
+        </Button>
+      </div>
+    </div>
   );
 }
