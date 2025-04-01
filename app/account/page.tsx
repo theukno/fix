@@ -1,160 +1,129 @@
 "use client"
 
-import type React from "react"
-
-import { useState } from "react"
+import { useState, useEffect } from "react"
+import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { useToast } from "@/hooks/use-toast"
 
-export default function AccountPage() {
-  const [isLoggedIn, setIsLoggedIn] = useState(false)
+export default function ManageAccount() {
+  const [user, setUser] = useState<any>(null)
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
+  const router = useRouter()
   const { toast } = useToast()
 
-  const handleLogin = (e: React.FormEvent) => {
+  useEffect(() => {
+    const checkSession = async () => {
+      try {
+        const sessionEmail = localStorage.getItem("sessionEmail")
+        if (!sessionEmail) return
+
+        const res = await fetch("/api/account", {
+          method: "GET",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email: sessionEmail }),
+        })
+        const data = await res.json()
+
+        if (res.ok) {
+          setUser(data.user)
+        } else {
+          localStorage.removeItem("sessionEmail")
+        }
+      } catch (error) {
+        console.error("Error checking session:", error)
+      }
+    }
+    checkSession()
+  }, [])
+
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!email || !password) {
-      toast({
-        title: "Error",
-        description: "Please fill in all required fields.",
-        variant: "destructive",
-      })
+      toast({ title: "Error", description: "Please fill in all fields.", variant: "destructive" })
       return
     }
 
-    setIsLoggedIn(true)
-    toast({
-      title: "Login Successful",
-      description: "You have been logged in successfully.",
-    })
-  }
-
-  const handleSignup = (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!email || !password) {
-      toast({
-        title: "Error",
-        description: "Please fill in all required fields.",
-        variant: "destructive",
+    try {
+      const res = await fetch("/api/account", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
       })
-      return
+      const data = await res.json()
+
+      if (res.ok) {
+        localStorage.setItem("sessionEmail", email)
+        setUser(data.user)
+        toast({ title: "Login Successful" })
+        router.push("/account/manage")
+      } else {
+        toast({ title: "Login Failed", description: data.message, variant: "destructive" })
+      }
+    } catch (error) {
+      console.error("Login error:", error)
     }
-
-    setIsLoggedIn(true)
-    toast({
-      title: "Signup Successful",
-      description: "Your account has been created successfully.",
-    })
   }
 
-  const handleLogout = () => {
-    setIsLoggedIn(false)
-    setEmail("")
-    setPassword("")
-    toast({
-      title: "Logged Out",
-      description: "You have been logged out successfully.",
-    })
+  const handleLogout = async () => {
+    if (!user) return
+
+    try {
+      await fetch("/api/account", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: user.email }),
+      })
+      localStorage.removeItem("sessionEmail")
+      setUser(null)
+      toast({ title: "Logged out successfully" })
+      router.push("/account")
+    } catch (error) {
+      console.error("Logout error:", error)
+    }
   }
 
-  if (isLoggedIn) {
+  if (!user) {
     return (
-      <div className="container max-w-4xl mx-auto py-12 px-4">
-        <h1 className="text-3xl font-bold mb-8">My Account</h1>
+      <div className="container max-w-md mx-auto py-12 px-4 text-center">
         <Card>
           <CardHeader>
-            <CardTitle>Account Info</CardTitle>
+            <CardTitle>Login</CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-sm text-muted-foreground mb-1">Email</p>
-            <p className="font-medium mb-4">{email}</p>
-            <p className="text-sm text-muted-foreground mb-1">Member Since</p>
-            <p className="font-medium">{new Date().toLocaleDateString()}</p>
+            <form onSubmit={handleLogin} className="space-y-4">
+              <div>
+                <Label htmlFor="email">Email</Label>
+                <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
+              </div>
+              <div>
+                <Label htmlFor="password">Password</Label>
+                <Input id="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} required />
+              </div>
+              <Button type="submit" className="w-full">Login</Button>
+            </form>
           </CardContent>
-          <CardFooter>
-            <Button variant="outline" className="w-full" onClick={handleLogout}>
-              Log Out
-            </Button>
-          </CardFooter>
         </Card>
       </div>
     )
   }
 
   return (
-    <div className="container max-w-md mx-auto py-12 px-4">
+    <div className="container max-w-2xl mx-auto py-12 px-4">
       <Card>
-        <CardHeader className="text-center">
-          <CardTitle className="text-2xl">Account Access</CardTitle>
-          <CardDescription>Sign in or create an account to continue</CardDescription>
+        <CardHeader>
+          <CardTitle>Account Management</CardTitle>
         </CardHeader>
         <CardContent>
-          <Tabs defaultValue="login">
-            <TabsList className="grid w-full grid-cols-2 mb-4">
-              <TabsTrigger value="login">Login</TabsTrigger>
-              <TabsTrigger value="signup">Sign Up</TabsTrigger>
-            </TabsList>
-            <TabsContent value="login">
-              <form onSubmit={handleLogin} className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="email-login">Email</Label>
-                  <Input
-                    id="email-login"
-                    type="email"
-                    placeholder="Enter your email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="password-login">Password</Label>
-                  <Input
-                    id="password-login"
-                    type="password"
-                    placeholder="Enter your password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                  />
-                </div>
-                <Button type="submit" className="w-full">
-                  Login
-                </Button>
-              </form>
-            </TabsContent>
-            <TabsContent value="signup">
-              <form onSubmit={handleSignup} className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="email-signup">Email</Label>
-                  <Input
-                    id="email-signup"
-                    type="email"
-                    placeholder="Enter your email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="password-signup">Password</Label>
-                  <Input
-                    id="password-signup"
-                    type="password"
-                    placeholder="Create a password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                  />
-                </div>
-                <Button type="submit" className="w-full">
-                  Create Account
-                </Button>
-              </form>
-            </TabsContent>
-          </Tabs>
+          <p><strong>Email:</strong> {user.email}</p>
+          <p><strong>Member Since:</strong> {new Date().toLocaleDateString()}</p>
         </CardContent>
+        <CardFooter>
+          <Button variant="destructive" onClick={handleLogout}>Log Out</Button>
+        </CardFooter>
       </Card>
     </div>
   )
