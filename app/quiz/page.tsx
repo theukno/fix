@@ -1,6 +1,7 @@
-"use client";
+"use client"; // ✅ Ensure this is at the top
+
 import React, { useState } from "react";
-import { useRouter } from "next/router";
+import { useRouter } from "next/navigation"; // ✅ Use next/navigation for App Router
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
@@ -163,7 +164,7 @@ const MoodQuizAndProductPage = () => {
 
   const handleQuizComplete = (dominantMood: string) => {
     setMood(dominantMood);
-    // Redirect to product page
+    // ✅ Corrected router push
     router.push(`/product?mood=${dominantMood}`);
   };
 
