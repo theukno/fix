@@ -1,138 +1,45 @@
+// pages/results.js
 "use client"
 
+import React, { useState, useEffect } from "react"
 import { useSearchParams } from "next/navigation"
-import { useEffect, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { ShoppingCart, ArrowRight } from "lucide-react"
 import Image from "next/image"
 import Link from "next/link"
+import { useCart } from "@/context/CartContext"
 
 // Mock product data based on mood
 const moodProducts = {
   happy: [
-    {
-      id: 1,
-      name: "Celebration Box",
-      price: 39.99,
-      image: "/Cele.jpg?height=200&width=200",
-      description: "A curated box of treats to celebrate good moments.",
-    },
-    {
-      id: 2,
-      name: "Gratitude Journal",
-      price: 14.99,
-      image: "/jo.webp?height=200&width=200",
-      description: "Record your daily moments of joy and gratitude.",
-    },
-    {
-      id: 3,
-      name: "Party Lights",
-      price: 24.99,
-      image: "/pl.jpg?height=200&width=200",
-      description: "Colorful LED lights to enhance your happy atmosphere.",
-    },
-    {
-      id: 4,
-      name: "Upbeat Playlist Subscription",
-      price: 9.99,
-      image: "/uw.jpeg?height=200&width=200",
-      description: "Access to curated playlists that boost your mood.",
-    },
+    { id: 1, name: "Celebration Box", price: 39.99, image: "/Cele.jpg", description: "A curated box of treats to celebrate good moments." },
+    { id: 2, name: "Gratitude Journal", price: 14.99, image: "/jo.webp", description: "Record your daily moments of joy and gratitude." },
+    { id: 3, name: "Party Lights", price: 24.99, image: "/pl.jpg", description: "Colorful LED lights to enhance your happy atmosphere." },
+    { id: 4, name: "Upbeat Playlist Subscription", price: 9.99, image: "/uw.jpeg", description: "Access to curated playlists that boost your mood." },
   ],
   calm: [
-    {
-      id: 5,
-      name: "Calming Tea Set",
-      price: 24.99,
-      image: "/tea.jpg?height=200&width=200",
-      description: "A selection of herbal teas to help you relax and unwind.",
-    },
-    {
-      id: 6,
-      name: "Aromatherapy Diffuser",
-      price: 34.99,
-      image: "/benefits-of-diffusers.webp?height=200&width=200",
-      description: "Essential oil diffuser with calming scents.",
-    },
-    {
-      id: 7,
-      name: "Meditation Cushion",
-      price: 29.99,
-      image: "/cu.webp?height=200&width=200",
-      description: "Comfortable cushion for your meditation practice.",
-    },
-    {
-      id: 8,
-      name: "Sound Machine",
-      price: 19.99,
-      image: "/sm.jpg?height=200&width=200",
-      description: "Create a peaceful environment with nature sounds.",
-    },
+    { id: 5, name: "Calming Tea Set", price: 24.99, image: "/tea.jpg", description: "A selection of herbal teas to help you relax and unwind." },
+    { id: 6, name: "Aromatherapy Diffuser", price: 34.99, image: "/benefits-of-diffusers.webp", description: "Essential oil diffuser with calming scents." },
+    { id: 7, name: "Meditation Cushion", price: 29.99, image: "/cu.webp", description: "Comfortable cushion for your meditation practice." },
+    { id: 8, name: "Sound Machine", price: 19.99, image: "/sm.jpg", description: "Create a peaceful environment with nature sounds." },
   ],
   sad: [
-    {
-      id: 9,
-      name: "Comfort Blanket",
-      price: 34.99,
-      image: "/blanket.jpg?height=200&width=200",
-      description: "A soft, weighted blanket for those days when you need extra comfort.",
-    },
-    {
-      id: 10,
-      name: "Self-Care Box",
-      price: 44.99,
-      image: "/gift.jpg?height=200&width=200",
-      description: "A collection of items to help you practice self-care.",
-    },
-    {
-      id: 11,
-      name: "Mood-Boosting Lamp",
-      price: 49.99,
-      image: "/lamp.jpeg?height=200&width=200",
-      description: "Light therapy lamp to help improve your mood.",
-    },
-    {
-      id: 12,
-      name: "Comforting Playlist Subscription",
-      price: 9.99,
-      image: "/cmu.jpg?height=200&width=200",
-      description: "Access to music that provides comfort and support.",
-    },
+    { id: 9, name: "Comfort Blanket", price: 34.99, image: "/blanket.jpg", description: "A soft, weighted blanket for those days when you need extra comfort." },
+    { id: 10, name: "Self-Care Box", price: 44.99, image: "/gift.jpg", description: "A collection of items to help you practice self-care." },
+    { id: 11, name: "Mood-Boosting Lamp", price: 49.99, image: "/lamp.jpeg", description: "Light therapy lamp to help improve your mood." },
+    { id: 12, name: "Comforting Playlist Subscription", price: 9.99, image: "/cmu.jpg", description: "Access to music that provides comfort and support." },
   ],
   energetic: [
-    {
-      id: 13,
-      name: "Energizing Fitness Kit",
-      price: 49.99,
-      image: "/kit.png?height=200&width=200",
-      description: "Everything you need for a quick workout to boost your energy.",
-    },
-    {
-      id: 14,
-      name: "Protein Snack Box",
-      price: 29.99,
-      image: "/1.jpeg?height=200&width=200",
-      description: "Healthy snacks to fuel your active lifestyle.",
-    },
-    {
-      id: 15,
-      name: "Wireless Earbuds",
-      price: 59.99,
-      image: "/2.jpeg?height=200&width=200",
-      description: "High-quality earbuds for your energetic music or podcasts.",
-    },
-    {
-      id: 16,
-      name: "Productivity Planner",
-      price: 19.99,
-      image: "/3.jpg?height=200&width=200",
-      description: "Plan your day efficiently and channel your energy.",
-    },
+    { id: 13, name: "Energizing Fitness Kit", price: 49.99, image: "/kit.png", description: "Everything you need for a quick workout to boost your energy." },
+    { id: 14, name: "Protein Snack Box", price: 29.99, image: "/1.jpeg", description: "Healthy snacks to fuel your active lifestyle." },
+    { id: 15, name: "Wireless Earbuds", price: 59.99, image: "/2.jpeg", description: "High-quality earbuds for your energetic music or podcasts." },
+    { id: 16, name: "Productivity Planner", price: 19.99, image: "/3.jpg", description: "Plan your day efficiently and channel your energy." },
   ],
 }
 
+// Mood descriptions and titles
 const moodDescriptions = {
   happy: "You're in a positive and joyful mood! Here are some products to celebrate and enhance your happiness.",
   calm: "You're feeling peaceful and relaxed. These products can help maintain your tranquil state of mind.",
@@ -149,6 +56,7 @@ const moodTitles = {
 
 export default function ResultsPage() {
   const searchParams = useSearchParams()
+  const { addToCart } = useCart() // Cart context to manage cart actions
   const [mood, setMood] = useState<string>("happy")
   const [products, setProducts] = useState<any[]>([])
 
@@ -189,7 +97,7 @@ export default function ResultsPage() {
               <p className="font-bold">${product.price.toFixed(2)}</p>
             </CardContent>
             <CardFooter className="p-4 pt-0">
-              <Button className="w-full">
+              <Button className="w-full" onClick={() => addToCart(product)}>
                 <ShoppingCart className="mr-2 h-4 w-4" />
                 Add to Cart
               </Button>
@@ -209,4 +117,3 @@ export default function ResultsPage() {
     </div>
   )
 }
-
