@@ -29,11 +29,11 @@ export default function CartPage() {
   const handleCheckout = () => {
     console.log("Checkout clicked!"); // Debug log to track click
     if (!isLoggedIn) {
-      console.log("User not logged in, opening dialog..."); // Debug log for dialog
-      setIsCheckoutOpen(true);
+      console.log("User not logged in, redirecting to login page..."); // Debug log for redirection
+      router.push("/app/account/page.tsx"); // Redirect to login page
     } else {
       console.log("User logged in, redirecting to payment page..."); // Debug log for routing
-      router.push("/payment"); // Redirect to payment page
+      router.push("/app/checkout/page.tsx"); // Redirect to payment page
     }
   }
 
@@ -133,24 +133,6 @@ export default function CartPage() {
           </Card>
         </div>
       </div>
-
-      {/* Checkout Dialog */}
-      {isCheckoutOpen && (
-        <Dialog open={isCheckoutOpen} onOpenChange={(open) => setIsCheckoutOpen(open)}>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Login Required</DialogTitle>
-              <DialogDescription>
-                You need to log in before proceeding to checkout.
-              </DialogDescription>
-            </DialogHeader>
-            <DialogFooter>
-              <Button onClick={() => setIsCheckoutOpen(false)}>Close</Button>
-              <Button variant="outline" onClick={() => router.push("/app/account/page.tsx")}>Login</Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
-      )}
     </div>
   )
 }
