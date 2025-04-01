@@ -10,6 +10,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { useToast } from "@/hooks/use-toast"
 
 export default function AccountPage() {
+  const [isLoggedIn, setIsLoggedIn] = useState(false)
   const [user, setUser] = useState<any>(null)
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
@@ -17,42 +18,93 @@ export default function AccountPage() {
   const { toast } = useToast()
 
   useEffect(() => {
-    const sessionEmail = localStorage.getItem("sessionEmail")
-    if (sessionEmail) {
-      setUser({ email: sessionEmail })
+    const checkSession = async () => {
+      const sessionEmail = localStorage.getItem("sessionEmail")
+      if (sessionEmail) {
+        setIsLoggedIn(true)
+        setUser({ email: sessionEmail }) // Mock user info, ideally fetched from the backend
+      }
     }
+    checkSession()
   }, [])
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
+
     if (!email || !password) {
-      toast({ title: "Error", description: "Please fill in all required fields.", variant: "destructive" })
+      toast({
+        title: "Error",
+        description: "Please fill in all required fields.",
+        variant: "destructive",
+      })
       return
     }
-    localStorage.setItem("sessionEmail", email)
+
+    // Mock login process
+    localStorage.setItem("sessionEmail", email) // Storing user email as part of session
+    setIsLoggedIn(true)
     setUser({ email })
-    toast({ title: "Login Successful", description: "You have been logged in successfully." })
+    toast({
+      title: "Login Successful",
+      description: "You are now logged in.",
+    })
+    router.push("/account/manage") // Redirect to account management page after login
   }
 
-  const handleLogout = () => {
+  const handleSignup = async (e: React.FormEvent) => {
+    e.preventDefault()
+
+    if (!email || !password) {
+      toast({
+        title: "Error",
+        description: "Please fill in all required fields.",
+        variant: "destructive",
+      })
+      return
+    }
+
+    // Mock signup process
+    toast({
+      title: "Signup Successful",
+      description: "Your account has been created.",
+    })
+
+    // After signup, automatically log the user in
+    localStorage.setItem("sessionEmail", email)
+    setIsLoggedIn(true)
+    setUser({ email })
+    router.push("/account/manage") // Redirect to account management page after signup
+  }
+
+  const handleLogout = async () => {
     localStorage.removeItem("sessionEmail")
+    setIsLoggedIn(false)
     setUser(null)
-    toast({ title: "Logged Out", description: "You have been logged out successfully." })
+    toast({
+      title: "Logged Out",
+      description: "You have been logged out successfully.",
+    })
+    router.push("/account") // Redirect to the login page after logout
   }
 
-  if (user) {
+  if (isLoggedIn) {
     return (
-      <div className="container max-w-2xl mx-auto py-12 px-4">
+      <div className="container max-w-4xl mx-auto py-12 px-4">
+        <h1 className="text-3xl font-bold mb-8">My Account</h1>
         <Card>
           <CardHeader>
-            <CardTitle>Account Management</CardTitle>
+            <CardTitle>Account Info</CardTitle>
           </CardHeader>
           <CardContent>
-            <p><strong>Email:</strong> {user.email}</p>
-            <p><strong>Member Since:</strong> {new Date().toLocaleDateString()}</p>
+            <p className="text-sm text-muted-foreground mb-1">Email</p>
+            <p className="font-medium mb-4">{user?.email}</p>
+            <p className="text-sm text-muted-foreground mb-1">Member Since</p>
+            <p className="font-medium">{new Date().toLocaleDateString()}</p>
           </CardContent>
           <CardFooter>
-            <Button variant="destructive" onClick={handleLogout}>Log Out</Button>
+            <Button variant="outline" className="w-full" onClick={handleLogout}>
+              Log Out
+            </Button>
           </CardFooter>
         </Card>
       </div>
@@ -64,6 +116,7 @@ export default function AccountPage() {
       <Card>
         <CardHeader className="text-center">
           <CardTitle className="text-2xl">Account Access</CardTitle>
+          <CardDescription>Sign in or create an account to continue</CardDescription>
         </CardHeader>
         <CardContent>
           <Tabs defaultValue="login">
@@ -75,13 +128,54 @@ export default function AccountPage() {
               <form onSubmit={handleLogin} className="space-y-4">
                 <div className="space-y-2">
                   <Label htmlFor="email-login">Email</Label>
-                  <Input id="email-login" type="email" placeholder="Enter your email" value={email} onChange={(e) => setEmail(e.target.value)} />
+                  <Input
+                    id="email-login"
+                    type="email"
+                    placeholder="Enter your email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                  />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="password-login">Password</Label>
-                  <Input id="password-login" type="password" placeholder="Enter your password" value={password} onChange={(e) => setPassword(e.target.value)} />
+                  <Input
+                    id="password-login"
+                    type="password"
+                    placeholder="Enter your password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                  />
                 </div>
-                <Button type="submit" className="w-full">Login</Button>
+                <Button type="submit" className="w-full">
+                  Login
+                </Button>
+              </form>
+            </TabsContent>
+            <TabsContent value="signup">
+              <form onSubmit={handleSignup} className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="email-signup">Email</Label>
+                  <Input
+                    id="email-signup"
+                    type="email"
+                    placeholder="Enter your email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="password-signup">Password</Label>
+                  <Input
+                    id="password-signup"
+                    type="password"
+                    placeholder="Create a password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                  />
+                </div>
+                <Button type="submit" className="w-full">
+                  Create Account
+                </Button>
               </form>
             </TabsContent>
           </Tabs>
