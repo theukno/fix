@@ -62,7 +62,7 @@
     "ai": "latest",
     "@ai-sdk/openai": "latest",
     "pg": "latest",
-    "@paypal/react-paypal-js": "^7.7.0
+    "@paypal/react-paypal-js": "^7.7.0"
   },
   "devDependencies": {
     "@types/node": "^22",
