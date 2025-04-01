@@ -14,6 +14,11 @@ export default function CheckoutPage() {
   const { toast } = useToast()
   const { cartItems, subtotal, clearCart } = useCart()
   const [isComplete, setIsComplete] = useState(false)
+  const [showPayPal, setShowPayPal] = useState(false) // State to show PayPal buttons
+
+  const handleCheckoutClick = () => {
+    setShowPayPal(true) // Show PayPal buttons when checkout is clicked
+  }
 
   const handlePaymentSuccess = (details) => {
     setIsComplete(true)
@@ -68,22 +73,28 @@ export default function CheckoutPage() {
                   <CardTitle>Payment</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <PayPalButtons
-                    createOrder={(data, actions) => {
-                      return actions.order.create({
-                        purchase_units: [
-                          {
-                            amount: { value: subtotal.toFixed(2) },
-                          },
-                        ],
-                      })
-                    }}
-                    onApprove={(data, actions) => {
-                      return actions.order.capture().then(handlePaymentSuccess)
-                    }}
-                    onError={handlePaymentError}
-                    onCancel={handlePaymentCancel}
-                  />
+                  {!showPayPal ? (
+                    <Button onClick={handleCheckoutClick} className="w-full">
+                      Proceed to Checkout
+                    </Button>
+                  ) : (
+                    <PayPalButtons
+                      createOrder={(data, actions) => {
+                        return actions.order.create({
+                          purchase_units: [
+                            {
+                              amount: { value: subtotal.toFixed(2) },
+                            },
+                          ],
+                        })
+                      }}
+                      onApprove={(data, actions) => {
+                        return actions.order.capture().then(handlePaymentSuccess)
+                      }}
+                      onError={handlePaymentError}
+                      onCancel={handlePaymentCancel}
+                    />
+                  )}
                 </CardContent>
               </Card>
             </div>
