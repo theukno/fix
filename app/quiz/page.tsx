@@ -1,32 +1,12 @@
-import React, { createContext, useContext, useState } from 'react';
-import { PayPalScriptProvider, PayPalButtons } from "@paypal/react-paypal-js";
+import React, { useState } from "react";
+import { useRouter } from "next/router";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { Progress } from "@/components/ui/progress";
-import { useRouter } from "next/navigation";
 
-// 1. Cart Context for managing the cart globally
-const CartContext = createContext<any>(null);
-
-export const CartProvider = ({ children }: { children: React.ReactNode }) => {
-  const [cart, setCart] = useState<any[]>([]);
-
-  const addToCart = (product: any) => {
-    setCart((prevCart) => [...prevCart, product]);
-  };
-
-  return (
-    <CartContext.Provider value={{ cart, addToCart }}>
-      {children}
-    </CartContext.Provider>
-  );
-};
-
-export const useCart = () => useContext(CartContext);
-
-// 2. Mood Quiz Component
+// 1. Quiz Questions
 const questions = [
   {
     id: 1,
@@ -58,11 +38,10 @@ const questions = [
       { id: "d", text: "Balanced", mood: "happy" },
     ],
   },
-  // Add more questions if needed
 ];
 
+// 2. MoodQuiz Component
 const MoodQuiz = ({ onComplete }: { onComplete: (mood: string) => void }) => {
-  const router = useRouter();
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [answers, setAnswers] = useState<string[]>([]);
   const [selectedOption, setSelectedOption] = useState<string | null>(null);
@@ -147,11 +126,8 @@ const MoodQuiz = ({ onComplete }: { onComplete: (mood: string) => void }) => {
   );
 };
 
-// 3. Product Page with "Add to Cart" and PayPal Payment Integration
+// 3. Product Page Component
 const ProductPage = ({ mood }: { mood: string }) => {
-  const { addToCart } = useCart();
-
-  // Determine a product based on the mood
   const getProduct = (mood: string) => {
     switch (mood) {
       case "sad":
@@ -169,70 +145,36 @@ const ProductPage = ({ mood }: { mood: string }) => {
 
   const product = getProduct(mood);
 
-  const handleAddToCart = () => {
-    addToCart({
-      id: product.id,
-      name: product.name,
-      price: product.price,
-      image: product.image || "https://via.placeholder.com/150", // Placeholder if no image
-    });
-
-    alert("Product added to cart!");
-  };
-
   return (
     <div className="container mx-auto py-12 px-4">
       <h2 className="text-2xl font-semibold">{product.name}</h2>
       <p>{product.description}</p>
       <p>Price: ${product.price.toFixed(2)}</p>
-      <Button onClick={handleAddToCart}>Add to Cart</Button>
-
-      {/* PayPal Payment Integration */}
-      <div className="mt-8">
-        <h3 className="text-xl mb-4">Proceed to Payment</h3>
-        <PayPalScriptProvider options={{ "client-id": "YOUR_PAYPAL_CLIENT_ID", currency: "USD" }}>
-          <PayPalButtons
-            style={{ layout: "vertical" }}
-            createOrder={(data, actions) => {
-              return actions.order.create({
-                purchase_units: [
-                  {
-                    amount: {
-                      value: product.price.toFixed(2),
-                    },
-                  },
-                ],
-              });
-            }}
-            onApprove={(data, actions) => {
-              return actions.order.capture().then((details: any) => {
-                alert("Transaction completed by " + details.payer.name.given_name);
-              });
-            }}
-          />
-        </PayPalScriptProvider>
-      </div>
+      <Button onClick={() => alert("Product added to cart!")}>Add to Cart</Button>
     </div>
   );
 };
 
-// 4. Main App Component
-const App = () => {
+// 4. Combined Component
+const MoodQuizAndProductPage = () => {
+  const router = useRouter();
   const [mood, setMood] = useState<string | null>(null);
 
   const handleQuizComplete = (dominantMood: string) => {
     setMood(dominantMood);
+    // Redirect to product page
+    router.push(`/product?mood=${dominantMood}`);
   };
 
   return (
-    <CartProvider>
+    <div>
       {mood === null ? (
         <MoodQuiz onComplete={handleQuizComplete} />
       ) : (
         <ProductPage mood={mood} />
       )}
-    </CartProvider>
+    </div>
   );
 };
 
-export default App;
+export default MoodQuizAndProductPage;
