@@ -1,249 +1,320 @@
-"use client";
+"use client"
 
-import React, { createContext, useContext, useState } from 'react';
-import { PayPalScriptProvider, PayPalButtons } from "@paypal/react-paypal-js";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Label } from "@/components/ui/label";
-import { Progress } from "@/components/ui/progress";
-import { useRouter } from "next/navigation";
+import { useState } from "react"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
+import { Badge } from "@/components/ui/badge"
+import { Input } from "@/components/ui/input"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { ShoppingCart, Search, SlidersHorizontal } from "lucide-react"
+import Image from "next/image"
+import { useCart } from "@/components/cart-provider"
+import { useToast } from "@/hooks/use-toast"
 
-// 1. Cart Context for managing the cart globally
-const CartContext = createContext<any>(null);
-
-export const CartProvider = ({ children }: { children: React.ReactNode }) => {
-  const [cart, setCart] = useState<any[]>([]);
-
-  const addToCart = (product: any) => {
-    setCart((prevCart) => {
-      // Check if product already exists in cart
-      const existingProduct = prevCart.find(item => item.id === product.id);
-      if (existingProduct) {
-        return prevCart; // Don't add it again
-      }
-      return [...prevCart, product];
-    });
-  };
-
-  return (
-    <CartContext.Provider value={{ cart, addToCart }}>
-      {children}
-    </CartContext.Provider>
-  );
-};
-
-export const useCart = () => useContext(CartContext);
-
-// 2. Mood Quiz Component
-const questions = [
+// Mock product data
+const allProducts = [
+  // Happy mood products
   {
     id: 1,
-    question: "How would you describe your energy level right now?",
-    options: [
-      { id: "a", text: "Very low, I feel drained", mood: "sad" },
-      { id: "b", text: "Relaxed and peaceful", mood: "calm" },
-      { id: "c", text: "Excited and full of energy", mood: "energetic" },
-      { id: "d", text: "Content and positive", mood: "happy" },
-    ],
+    name: "Celebration Box",
+    price: 39.99,
+    image: "/Cele.jpg?height=200&width=200",
+    description: "A curated box of treats to celebrate good moments.",
+    mood: "happy",
+    category: "gift-sets",
   },
   {
     id: 2,
-    question: "What kind of activity appeals to you most right now?",
-    options: [
-      { id: "a", text: "Resting or sleeping", mood: "sad" },
-      { id: "b", text: "Meditation or reading", mood: "calm" },
-      { id: "c", text: "Exercise or dancing", mood: "energetic" },
-      { id: "d", text: "Socializing or creative projects", mood: "happy" },
-    ],
+    name: "Gratitude Journal",
+    price: 14.99,
+    image: "/jo.webp?height=200&width=200",
+    description: "Record your daily moments of joy and gratitude.",
+    mood: "happy",
+    category: "stationery",
   },
   {
     id: 3,
-    question: "What's your current stress level?",
-    options: [
-      { id: "a", text: "Overwhelmed", mood: "sad" },
-      { id: "b", text: "Minimal stress", mood: "calm" },
-      { id: "c", text: "Positive stress/excitement", mood: "energetic" },
-      { id: "d", text: "Balanced", mood: "happy" },
-    ],
+    name: "Party Lights",
+    price: 24.99,
+    image: "/pl.jpg?height=200&width=200",
+    description: "Colorful LED lights to enhance your happy atmosphere.",
+    mood: "happy",
+    category: "home",
   },
-  // Add more questions if needed
-];
+  {
+    id: 4,
+    name: "Upbeat Playlist Subscription",
+    price: 9.99,
+    image: "/uw.jpeg?height=200&width=200",
+    description: "Access to curated playlists that boost your mood.",
+    mood: "happy",
+    category: "digital",
+  },
 
-const MoodQuiz = ({ onComplete }: { onComplete: (mood: string) => void }) => {
-  const router = useRouter();
-  const [currentQuestion, setCurrentQuestion] = useState(0);
-  const [answers, setAnswers] = useState<string[]>([]);
-  const [selectedOption, setSelectedOption] = useState<string | null>(null);
+  // Calm mood products
+  {
+    id: 5,
+    name: "Calming Tea Set",
+    price: 24.99,
+    image: "/tea.jpg?height=200&width=200",
+    description: "A selection of herbal teas to help you relax and unwind.",
+    mood: "calm",
+    category: "food-drink",
+  },
+  {
+    id: 6,
+    name: "Aromatherapy Diffuser",
+    price: 34.99,
+    image: "/benefits-of-diffusers.webp?height=200&width=200",
+    description: "Essential oil diffuser with calming scents.",
+    mood: "calm",
+    category: "home",
+  },
+  {
+    id: 7,
+    name: "Meditation Cushion",
+    price: 29.99,
+    image: "/cu.webp?height=200&width=200",
+    description: "Comfortable cushion for your meditation practice.",
+    mood: "calm",
+    category: "wellness",
+  },
+  {
+    id: 8,
+    name: "Sound Machine",
+    price: 19.99,
+    image: "/sm.jpg?height=200&width=200",
+    description: "Create a peaceful environment with nature sounds.",
+    mood: "calm",
+    category: "electronics",
+  },
 
-  const handleNext = () => {
-    if (selectedOption) {
-      const newAnswers = [...answers, selectedOption];
-      setAnswers(newAnswers);
+  // Sad mood products
+  {
+    id: 9,
+    name: "Comfort Blanket",
+    price: 34.99,
+    image: "/blanket.jpg?height=200&width=200",
+    description: "A soft, weighted blanket for those days when you need extra comfort.",
+    mood: "sad",
+    category: "home",
+  },
+  {
+    id: 10,
+    name: "Self-Care Box",
+    price: 44.99,
+    image: "/gift.jpg?height=200&width=200",
+    description: "A collection of items to help you practice self-care.",
+    mood: "sad",
+    category: "gift-sets",
+  },
+  {
+    id: 11,
+    name: "Mood-Boosting Lamp",
+    price: 49.99,
+    image: "/lamp.jpeg?height=200&width=200",
+    description: "Light therapy lamp to help improve your mood.",
+    mood: "sad",
+    category: "electronics",
+  },
+  {
+    id: 12,
+    name: "Comforting Playlist Subscription",
+    price: 9.99,
+    image: "/cmu.jpg?height=200&width=200",
+    description: "Access to music that provides comfort and support.",
+    mood: "sad",
+    category: "digital",
+  },
 
-      if (currentQuestion < questions.length - 1) {
-        setCurrentQuestion(currentQuestion + 1);
-        setSelectedOption(null);
-      } else {
-        // Calculate dominant mood
-        const moodCounts: Record<string, number> = {};
-        newAnswers.forEach((mood) => {
-          moodCounts[mood] = (moodCounts[mood] || 0) + 1;
-        });
+  // Energetic mood products
+  {
+    id: 13,
+    name: "Energizing Fitness Kit",
+    price: 49.99,
+    image: "/kit.png?height=200&width=200",
+    description: "Everything you need for a quick workout to boost your energy.",
+    mood: "energetic",
+    category: "wellness",
+  },
+  {
+    id: 14,
+    name: "Protein Snack Box",
+    price: 29.99,
+    image: "/1.jpeg?height=200&width=200",
+    description: "Healthy snacks to fuel your active lifestyle.",
+    mood: "energetic",
+    category: "food-drink",
+  },
+  {
+    id: 15,
+    name: "Wireless Earbuds",
+    price: 59.99,
+    image: "/2.jpg?height=200&width=200",
+    description: "High-quality earbuds for your energetic music or podcasts.",
+    mood: "energetic",
+    category: "electronics",
+  },
+  {
+    id: 16,
+    name: "Productivity Planner",
+    price: 19.99,
+    image: "/3.jpg?height=200&width=200",
+    description: "Plan your day efficiently and channel your energy.",
+    mood: "energetic",
+    category: "stationery",
+  },
+]
 
-        const dominantMood = Object.entries(moodCounts).reduce(
-          (max, [mood, count]) => (count > max[1] ? [mood, count] : max),
-          ["", 0]
-        )[0];
+const categories = [
+  { value: "all", label: "All Categories" },
+  { value: "gift-sets", label: "Gift Sets" },
+  { value: "home", label: "Home & Living" },
+  { value: "wellness", label: "Wellness" },
+  { value: "electronics", label: "Electronics" },
+  { value: "stationery", label: "Stationery" },
+  { value: "food-drink", label: "Food & Drink" },
+  { value: "digital", label: "Digital Products" },
+]
 
-        // Pass the dominant mood to the parent component
-        onComplete(dominantMood);
-      }
+export default function ProductsPage() {
+  const [activeTab, setActiveTab] = useState("all")
+  const [searchQuery, setSearchQuery] = useState("")
+  const [selectedCategory, setSelectedCategory] = useState("all")
+  const [sortOption, setSortOption] = useState("featured")
+
+  const { addToCart } = useCart()
+  const { toast } = useToast()
+
+  // Filter products based on mood tab, search query, and category
+  const filteredProducts = allProducts.filter((product) => {
+    const matchesMood = activeTab === "all" || product.mood === activeTab
+    const matchesSearch =
+      product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      product.description.toLowerCase().includes(searchQuery.toLowerCase())
+    const matchesCategory = selectedCategory === "all" || product.category === selectedCategory
+
+    return matchesMood && matchesSearch && matchesCategory
+  })
+
+  // Sort products
+  const sortedProducts = [...filteredProducts].sort((a, b) => {
+    if (sortOption === "price-low") {
+      return a.price - b.price
+    } else if (sortOption === "price-high") {
+      return b.price - a.price
+    } else if (sortOption === "name") {
+      return a.name.localeCompare(b.name)
     }
-  };
+    // Default: featured (no specific sort)
+    return 0
+  })
 
-  const progress = ((currentQuestion + 1) / questions.length) * 100;
-  const question = questions[currentQuestion];
-
-  return (
-    <div className="container max-w-4xl mx-auto py-12 px-4">
-      <Card className="w-full">
-        <CardHeader>
-          <CardTitle className="text-2xl">Mood Quiz</CardTitle>
-          <CardDescription>
-            Question {currentQuestion + 1} of {questions.length}
-          </CardDescription>
-          <Progress value={progress} className="h-2 mt-2" />
-        </CardHeader>
-        <CardContent className="pt-6">
-          <h3 className="text-xl font-medium mb-4">{question.question}</h3>
-          <RadioGroup value={selectedOption || ""} onValueChange={setSelectedOption}>
-            <div className="grid gap-4">
-              {question.options.map((option) => (
-                <div
-                  key={option.id}
-                  className="flex items-center space-x-2 border p-4 rounded-lg hover:bg-muted/50 cursor-pointer"
-                >
-                  <RadioGroupItem value={option.mood} id={option.id} />
-                  <Label htmlFor={option.id} className="flex-1 cursor-pointer">
-                    {option.text}
-                  </Label>
-                </div>
-              ))}
-            </div>
-          </RadioGroup>
-        </CardContent>
-        <CardFooter className="flex justify-between">
-          <Button
-            variant="outline"
-            onClick={() => {
-              if (currentQuestion > 0) {
-                setCurrentQuestion(currentQuestion - 1);
-                setSelectedOption(answers[currentQuestion - 1] || null);
-                setAnswers(answers.slice(0, -1));
-              }
-            }}
-            disabled={currentQuestion === 0}
-          >
-            Previous
-          </Button>
-          <Button onClick={handleNext} disabled={!selectedOption}>
-            {currentQuestion < questions.length - 1 ? "Next" : "See Results"}
-          </Button>
-        </CardFooter>
-      </Card>
-    </div>
-  );
-};
-
-// 3. Product Page with "Add to Cart" and PayPal Payment Integration
-const ProductPage = ({ mood }: { mood: string }) => {
-  const { addToCart } = useCart();
-
-  // Determine a product based on the mood
-  const getProduct = (mood: string) => {
-    switch (mood) {
-      case "sad":
-        return { id: 1, name: "Comfort Blanket", description: "A soft blanket to keep you cozy.", price: 20.00 };
-      case "calm":
-        return { id: 2, name: "Meditation Kit", description: "A set for peaceful meditation.", price: 35.00 };
-      case "energetic":
-        return { id: 3, name: "Fitness Equipment", description: "Equipment to get your energy flowing.", price: 50.00 };
-      case "happy":
-        return { id: 4, name: "Creative Set", description: "A set for your next fun project.", price: 30.00 };
-      default:
-        return { id: 5, name: "Mystery Product", description: "A product tailored to your mood.", price: 25.00 };
-    }
-  };
-
-  const product = getProduct(mood);
-
-  const handleAddToCart = () => {
-    // Ensure the product gets added to the cart
+  const handleAddToCart = (product: any) => {
     addToCart({
       id: product.id,
       name: product.name,
       price: product.price,
-      description: product.description,
-      image: "https://via.placeholder.com/150", // Placeholder if no image
-    });
+      image: product.image,
+    })
 
-    alert("Product added to cart!");
-  };
+    toast({
+      title: "Added to cart",
+      description: `${product.name} has been added to your cart.`,
+    })
+  }
 
   return (
     <div className="container mx-auto py-12 px-4">
-      <h2 className="text-2xl font-semibold">{product.name}</h2>
-      <p>{product.description}</p>
-      <p>Price: ${product.price.toFixed(2)}</p>
-      <Button onClick={handleAddToCart}>Add to Cart</Button>
+      <h1 className="text-3xl font-bold mb-8">Shop Products</h1>
 
-      {/* PayPal Payment Integration */}
-      <div className="mt-8">
-        <h3 className="text-xl mb-4">Proceed to Payment</h3>
-        <PayPalScriptProvider options={{ "client-id": "YOUR_PAYPAL_CLIENT_ID", currency: "USD" }}>
-          <PayPalButtons
-            style={{ layout: "vertical" }}
-            createOrder={(data, actions) => {
-              return actions.order.create({
-                purchase_units: [
-                  {
-                    amount: {
-                      value: product.price.toFixed(2),
-                    },
-                  },
-                ],
-              });
-            }}
-            onApprove={(data, actions) => {
-              return actions.order.capture().then((details: any) => {
-                alert("Transaction completed by " + details.payer.name.given_name);
-              });
-            }}
+      {/* Filters and Search */}
+      <div className="flex flex-col md:flex-row gap-4 mb-8">
+        <div className="relative flex-1">
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input
+            placeholder="Search products..."
+            className="pl-10"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
           />
-        </PayPalScriptProvider>
+        </div>
+        <div className="flex gap-2">
+          <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+            <SelectTrigger className="w-[180px]">
+              <SlidersHorizontal className="mr-2 h-4 w-4" />
+              <SelectValue placeholder="Category" />
+            </SelectTrigger>
+            <SelectContent>
+              {categories.map((category) => (
+                <SelectItem key={category.value} value={category.value}>
+                  {category.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <Select value={sortOption} onValueChange={setSortOption}>
+            <SelectTrigger className="w-[180px]">
+              <SelectValue placeholder="Sort by" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="featured">Featured</SelectItem>
+              <SelectItem value="price-low">Price: Low to High</SelectItem>
+              <SelectItem value="price-high">Price: High to Low</SelectItem>
+              <SelectItem value="name">Name</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
       </div>
-    </div>
-  );
-};
 
-// 4. Main App Component
-const App = () => {
-  const [mood, setMood] = useState<string | null>(null);
+      {/* Mood Tabs */}
+      <Tabs defaultValue="all" value={activeTab} onValueChange={setActiveTab} className="mb-8">
+        <TabsList className="grid grid-cols-5 w-full max-w-md mx-auto">
+          <TabsTrigger value="all">All</TabsTrigger>
+          <TabsTrigger value="happy">Happy</TabsTrigger>
+          <TabsTrigger value="calm">Calm</TabsTrigger>
+          <TabsTrigger value="sad">Comfort</TabsTrigger>
+          <TabsTrigger value="energetic">Energetic</TabsTrigger>
+        </TabsList>
+      </Tabs>
 
-  const handleQuizComplete = (dominantMood: string) => {
-    setMood(dominantMood);
-  };
-
-  return (
-    <CartProvider>
-      {mood === null ? (
-        <MoodQuiz onComplete={handleQuizComplete} />
+      {/* Products Grid */}
+      {sortedProducts.length > 0 ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          {sortedProducts.map((product) => (
+            <Card key={product.id} className="overflow-hidden">
+              <div className="relative h-48 w-full">
+                <Image src={product.image || "/placeholder.svg"} alt={product.name} fill className="object-cover" />
+              </div>
+              <CardHeader className="p-4 pb-0">
+                <div className="flex justify-between items-start">
+                  <CardTitle className="text-lg">{product.name}</CardTitle>
+                  <Badge variant="outline" className="bg-primary/10 text-primary">
+                    {product.mood.charAt(0).toUpperCase() + product.mood.slice(1)}
+                  </Badge>
+                </div>
+              </CardHeader>
+              <CardContent className="p-4 pt-2">
+                <p className="text-sm text-gray-500 dark:text-gray-400 mb-2">{product.description}</p>
+                <p className="font-bold">${product.price.toFixed(2)}</p>
+              </CardContent>
+              <CardFooter className="p-4 pt-0">
+                <Button className="w-full" onClick={() => handleAddToCart(product)}>
+                  <ShoppingCart className="mr-2 h-4 w-4" />
+                  Add to Cart
+                </Button>
+              </CardFooter>
+            </Card>
+          ))}
+        </div>
       ) : (
-        <ProductPage mood={mood} />
+        <div className="text-center py-12">
+          <h2 className="text-xl font-semibold mb-2">No products found</h2>
+          <p className="text-muted-foreground">Try adjusting your filters or search query.</p>
+        </div>
       )}
-    </CartProvider>
-  );
-};
+    </div>
+  )
+}
 
-export default App;
