@@ -1,4 +1,3 @@
-// pages/results.js
 "use client"
 
 import React, { useState, useEffect } from "react"
@@ -6,10 +5,9 @@ import { useSearchParams } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { ShoppingCart, ArrowRight } from "lucide-react"
+import { ArrowRight } from "lucide-react"
 import Image from "next/image"
 import Link from "next/link"
-import { useCart } from "@/context/CartContext"
 
 // Mock product data based on mood
 const moodProducts = {
@@ -56,7 +54,6 @@ const moodTitles = {
 
 export default function ResultsPage() {
   const searchParams = useSearchParams()
-  const { addToCart } = useCart() // Cart context to manage cart actions
   const [mood, setMood] = useState<string>("happy")
   const [products, setProducts] = useState<any[]>([])
 
@@ -97,9 +94,8 @@ export default function ResultsPage() {
               <p className="font-bold">${product.price.toFixed(2)}</p>
             </CardContent>
             <CardFooter className="p-4 pt-0">
-              <Button className="w-full" onClick={() => addToCart(product)}>
-                <ShoppingCart className="mr-2 h-4 w-4" />
-                Add to Cart
+              <Button className="w-full" as="a" href={`/product/${product.id}`}>
+                View Product
               </Button>
             </CardFooter>
           </Card>
