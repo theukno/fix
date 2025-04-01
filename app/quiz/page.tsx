@@ -1,14 +1,33 @@
-"use client"
+import React, { createContext, useContext, useState } from 'react';
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Label } from "@/components/ui/label";
+import { Progress } from "@/components/ui/progress";
+import { useRouter } from "next/navigation";
 
-import { useState } from "react"
-import { useRouter } from "next/navigation"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
-import { Label } from "@/components/ui/label"
-import { Progress } from "@/components/ui/progress"
+// 1. Cart Context for managing the cart globally
+const CartContext = createContext<any>(null);
 
-// Quiz questions
+// CartProvider component to wrap around the application
+export const CartProvider = ({ children }: { children: React.ReactNode }) => {
+  const [cart, setCart] = useState<any[]>([]);
+
+  const addToCart = (product: any) => {
+    setCart((prevCart) => [...prevCart, product]);
+  };
+
+  return (
+    <CartContext.Provider value={{ cart, addToCart }}>
+      {children}
+    </CartContext.Provider>
+  );
+};
+
+// Custom hook to use cart in any component
+export const useCart = () => useContext(CartContext);
+
+// 2. Mood Quiz Component
 const questions = [
   {
     id: 1,
@@ -40,62 +59,43 @@ const questions = [
       { id: "d", text: "Balanced", mood: "happy" },
     ],
   },
-  {
-    id: 4,
-    question: "What colors are you drawn to right now?",
-    options: [
-      { id: "a", text: "Blues or grays", mood: "sad" },
-      { id: "b", text: "Soft pastels or neutrals", mood: "calm" },
-      { id: "c", text: "Bright reds or oranges", mood: "energetic" },
-      { id: "d", text: "Yellows or warm colors", mood: "happy" },
-    ],
-  },
-  {
-    id: 5,
-    question: "What would help you most right now?",
-    options: [
-      { id: "a", text: "Comfort and support", mood: "sad" },
-      { id: "b", text: "Peace and quiet", mood: "calm" },
-      { id: "c", text: "Stimulation and activity", mood: "energetic" },
-      { id: "d", text: "Fun and enjoyment", mood: "happy" },
-    ],
-  },
-]
+  // Add more questions if needed
+];
 
-export default function MoodQuiz() {
-  const router = useRouter()
-  const [currentQuestion, setCurrentQuestion] = useState(0)
-  const [answers, setAnswers] = useState<string[]>([])
-  const [selectedOption, setSelectedOption] = useState<string | null>(null)
+const MoodQuiz = () => {
+  const router = useRouter();
+  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [answers, setAnswers] = useState<string[]>([]);
+  const [selectedOption, setSelectedOption] = useState<string | null>(null);
 
   const handleNext = () => {
     if (selectedOption) {
-      const newAnswers = [...answers, selectedOption]
-      setAnswers(newAnswers)
+      const newAnswers = [...answers, selectedOption];
+      setAnswers(newAnswers);
 
       if (currentQuestion < questions.length - 1) {
-        setCurrentQuestion(currentQuestion + 1)
-        setSelectedOption(null)
+        setCurrentQuestion(currentQuestion + 1);
+        setSelectedOption(null);
       } else {
         // Calculate dominant mood
-        const moodCounts: Record<string, number> = {}
+        const moodCounts: Record<string, number> = {};
         newAnswers.forEach((mood) => {
-          moodCounts[mood] = (moodCounts[mood] || 0) + 1
-        })
+          moodCounts[mood] = (moodCounts[mood] || 0) + 1;
+        });
 
         const dominantMood = Object.entries(moodCounts).reduce(
           (max, [mood, count]) => (count > max[1] ? [mood, count] : max),
-          ["", 0],
-        )[0]
+          ["", 0]
+        )[0];
 
-        // Redirect to results page with mood
-        router.push(`/results?mood=${dominantMood}`)
+        // Redirect to product page with mood
+        router.push(`/product?mood=${dominantMood}`);
       }
     }
-  }
+  };
 
-  const progress = ((currentQuestion + 1) / questions.length) * 100
-  const question = questions[currentQuestion]
+  const progress = ((currentQuestion + 1) / questions.length) * 100;
+  const question = questions[currentQuestion];
 
   return (
     <div className="container max-w-4xl mx-auto py-12 px-4">
@@ -130,9 +130,9 @@ export default function MoodQuiz() {
             variant="outline"
             onClick={() => {
               if (currentQuestion > 0) {
-                setCurrentQuestion(currentQuestion - 1)
-                setSelectedOption(answers[currentQuestion - 1] || null)
-                setAnswers(answers.slice(0, -1))
+                setCurrentQuestion(currentQuestion - 1);
+                setSelectedOption(answers[currentQuestion - 1] || null);
+                setAnswers(answers.slice(0, -1));
               }
             }}
             disabled={currentQuestion === 0}
@@ -145,6 +145,40 @@ export default function MoodQuiz() {
         </CardFooter>
       </Card>
     </div>
-  )
-}
+  );
+};
 
+// 3. Product Page with "Add to Cart"
+const ProductPage = () => {
+  const { addToCart } = useCart();
+
+  const product = {
+    name: 'Product based on mood',
+    description: 'This product matches your mood based on your quiz results.',
+  };
+
+  const handleAddToCart = () => {
+    addToCart(product);
+    alert('Product added to cart!');
+  };
+
+  return (
+    <div className="container mx-auto py-12 px-4">
+      <h2 className="text-2xl font-semibold">{product.name}</h2>
+      <p>{product.description}</p>
+      <Button onClick={handleAddToCart}>Add to Cart</Button>
+    </div>
+  );
+};
+
+// 4. Main App component to wrap with CartProvider
+const App = () => {
+  return (
+    <CartProvider>
+      <MoodQuiz />
+      <ProductPage />
+    </CartProvider>
+  );
+};
+
+export default App;
