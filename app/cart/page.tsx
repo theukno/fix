@@ -42,7 +42,7 @@ export default function CartPage() {
       router.push("/app/account"); // ✅ Fixed route
     } else {
       console.log("User logged in, redirecting to checkout page...");
-      router.push("/checkout"); // ✅ Redirect to checkout page
+      router.push("/app/checkout"); // ✅ Redirect to checkout page
     }
   };
 
