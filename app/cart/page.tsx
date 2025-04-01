@@ -146,7 +146,7 @@ export default function CartPage() {
             </DialogHeader>
             <DialogFooter>
               <Button onClick={() => setIsCheckoutOpen(false)}>Close</Button>
-              <Button variant="outline" onClick={() => router.push("/login")}>Login</Button>
+              <Button variant="outline" onClick={() => router.push("/app/account/page.tsx")}>Login</Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>
