@@ -14,7 +14,14 @@ export const CartProvider = ({ children }: { children: React.ReactNode }) => {
   const [cart, setCart] = useState<any[]>([]);
 
   const addToCart = (product: any) => {
-    setCart((prevCart) => [...prevCart, product]);
+    setCart((prevCart) => {
+      // Check if product already exists in cart
+      const existingProduct = prevCart.find(item => item.id === product.id);
+      if (existingProduct) {
+        return prevCart; // Don't add it again
+      }
+      return [...prevCart, product];
+    });
   };
 
   return (
@@ -175,7 +182,8 @@ const ProductPage = ({ mood }: { mood: string }) => {
       id: product.id,
       name: product.name,
       price: product.price,
-      image: product.image || "https://via.placeholder.com/150", // Placeholder if no image
+      description: product.description,
+      image: "https://via.placeholder.com/150", // Placeholder if no image
     });
 
     alert("Product added to cart!");
