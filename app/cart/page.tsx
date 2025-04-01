@@ -1,13 +1,13 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
-import { useCart } from "@/components/cart-provider"
-import { useRouter } from "next/navigation" // Import useRouter
-import { Button } from "@/components/ui/button"
-import { Minus, Plus, Trash2, CreditCard, ShoppingCart } from "lucide-react"
-import Image from "next/image"
-import Link from "next/link"
-import { useToast } from "@/hooks/use-toast"
+import { useState, useEffect } from "react";
+import { useCart } from "@/components/cart-provider";
+import { useRouter } from "next/navigation"; // For App Router
+import { Button } from "@/components/ui/button";
+import { Minus, Plus, Trash2, CreditCard, ShoppingCart } from "lucide-react";
+import Image from "next/image";
+import Link from "next/link";
+import { useToast } from "@/hooks/use-toast";
 import {
   Dialog,
   DialogContent,
@@ -15,35 +15,39 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog"
-import { Label } from "@/components/ui/label"
+} from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
 
 export default function CartPage() {
-  const { cartItems, removeFromCart, updateQuantity, clearCart, subtotal } = useCart()
-  const { toast } = useToast()
-  const [isCheckoutOpen, setIsCheckoutOpen] = useState(false)
-  const [isLoggedIn, setIsLoggedIn] = useState(false) // Placeholder for login state
-  const router = useRouter() // Initialize router
+  const { cartItems, removeFromCart, updateQuantity, clearCart, subtotal } = useCart();
+  const { toast } = useToast();
+  const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const router = useRouter();
 
+  // Ensure localStorage is accessed only on the client
   useEffect(() => {
-    const sessionEmail = localStorage.getItem("sessionEmail")
-    if (sessionEmail) {
-      setIsLoggedIn(true) // Update state if user is logged in
+    if (typeof window !== "undefined") {
+      const sessionEmail = localStorage.getItem("sessionEmail");
+      if (sessionEmail) {
+        setIsLoggedIn(true);
+      }
     }
-  }, [])
+  }, []);
 
   const handleCheckout = () => {
-    console.log("Checkout clicked!"); // Debug log to track click
+    console.log("Checkout clicked!");
     if (!isLoggedIn) {
-      console.log("User not logged in, redirecting to login page..."); // Debug log for redirection
-      router.push("/app/account/page"); // Redirect to login page (remove `.tsx`)
+      console.log("User not logged in, redirecting to login page...");
+      router.push("/app/account"); // ✅ Fixed route
     } else {
-      console.log("User logged in, redirecting to payment page..."); // Debug log for routing
-      router.push("/page"); // Redirect to payment page (remove `.tsx`)
+      console.log("User logged in, redirecting to checkout page...");
+      router.push("/checkout"); // ✅ Redirect to checkout page
     }
-  }
+  };
 
-  if (cartItems.length === 0) {
+  // ✅ Ensure `cartItems` is properly checked before rendering
+  if (!cartItems || cartItems.length === 0) {
     return (
       <div className="container max-w-4xl mx-auto py-12 px-4 text-center">
         <h1 className="text-3xl font-bold mb-6">Your Cart</h1>
@@ -53,14 +57,16 @@ export default function CartPage() {
               <ShoppingCart className="h-10 w-10 text-muted-foreground" />
             </div>
             <h2 className="text-xl font-semibold">Your cart is empty</h2>
-            <p className="text-muted-foreground">Looks like you haven't added any products to your cart yet.</p>
+            <p className="text-muted-foreground">
+              Looks like you haven't added any products to your cart yet.
+            </p>
             <Link href="/products">
               <Button>Browse Products</Button>
             </Link>
           </div>
         </div>
       </div>
-    )
+    );
   }
 
   return (
@@ -68,11 +74,19 @@ export default function CartPage() {
       <h1 className="text-3xl font-bold mb-6">Your Cart</h1>
 
       <div className="grid gap-8 md:grid-cols-3">
+        {/* Cart Items Section */}
         <div className="md:col-span-2 space-y-4">
           {cartItems.map((item) => (
             <div key={item.id} className="flex gap-4 p-4 border rounded-md shadow-md">
               <div className="relative h-24 w-24 rounded-md overflow-hidden">
-                <Image src={item.image || "/placeholder.svg"} alt={item.name} fill className="object-cover" />
+                {/* ✅ Corrected Image Component */}
+                <Image
+                  src={item.image || "/placeholder.svg"}
+                  alt={item.name}
+                  width={96} // 24 * 4
+                  height={96} // 24 * 4
+                  className="object-cover"
+                />
               </div>
               <div className="flex-1">
                 <h3 className="font-medium">{item.name}</h3>
@@ -108,6 +122,7 @@ export default function CartPage() {
           ))}
         </div>
 
+        {/* Order Summary Section */}
         <div>
           <div className="p-6 border rounded-md shadow-md">
             <h2 className="text-xl font-semibold mb-4">Order Summary</h2>
@@ -120,6 +135,7 @@ export default function CartPage() {
               <span>${subtotal.toFixed(2)}</span>
             </div>
 
+            {/* Checkout & Clear Cart Buttons */}
             <div className="flex flex-col space-y-2 mt-4">
               <Button className="w-full" onClick={handleCheckout}>
                 <CreditCard className="mr-2 h-4 w-4" />
@@ -133,5 +149,5 @@ export default function CartPage() {
         </div>
       </div>
     </div>
-  )
+  );
 }
