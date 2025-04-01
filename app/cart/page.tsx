@@ -2,10 +2,11 @@
 
 import { useState } from "react"
 import { useCart } from "@/components/cart-provider"
+import { useRouter } from "next/navigation" // Import useRouter
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
-import { Minus, Plus, Trash2, CreditCard } from "lucide-react"
+import { Minus, Plus, Trash2, CreditCard, ShoppingCart } from "lucide-react"
 import Image from "next/image"
 import Link from "next/link"
 import { useToast } from "@/hooks/use-toast"
@@ -23,18 +24,14 @@ export default function CartPage() {
   const { cartItems, removeFromCart, updateQuantity, clearCart, subtotal } = useCart()
   const { toast } = useToast()
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false)
-  const [isLoggedIn, setIsLoggedIn] = useState(false) // Mock authentication state
+  const [isLoggedIn, setIsLoggedIn] = useState(false)
+  const router = useRouter() // Initialize router
 
   const handleCheckout = () => {
     if (!isLoggedIn) {
       setIsCheckoutOpen(true)
     } else {
-      // Process checkout for logged in users
-      toast({
-        title: "Order Placed!",
-        description: "Your order has been successfully placed.",
-      })
-      clearCart()
+      router.push("/payment") // Redirect to payment page
     }
   }
 
@@ -83,7 +80,6 @@ export default function CartPage() {
                         disabled={item.quantity <= 1}
                       >
                         <Minus className="h-3 w-3" />
-                        <span className="sr-only">Decrease quantity</span>
                       </Button>
                       <span className="w-12 text-center">{item.quantity}</span>
                       <Button
@@ -93,14 +89,12 @@ export default function CartPage() {
                         onClick={() => updateQuantity(item.id, item.quantity + 1)}
                       >
                         <Plus className="h-3 w-3" />
-                        <span className="sr-only">Increase quantity</span>
                       </Button>
                     </div>
                   </div>
                   <div className="flex flex-col justify-between items-end">
                     <Button variant="ghost" size="icon" onClick={() => removeFromCart(item.id)}>
                       <Trash2 className="h-4 w-4" />
-                      <span className="sr-only">Remove item</span>
                     </Button>
                     <p className="font-medium">${(item.price * item.quantity).toFixed(2)}</p>
                   </div>
@@ -120,10 +114,6 @@ export default function CartPage() {
                 <span>Subtotal</span>
                 <span>${subtotal.toFixed(2)}</span>
               </div>
-              <div className="flex justify-between">
-                <span>Shipping</span>
-                <span>Free</span>
-              </div>
               <div className="flex justify-between font-medium text-lg">
                 <span>Total</span>
                 <span>${subtotal.toFixed(2)}</span>
@@ -141,50 +131,6 @@ export default function CartPage() {
           </Card>
         </div>
       </div>
-
-      {/* Login/Signup Dialog */}
-      <Dialog open={isCheckoutOpen} onOpenChange={setIsCheckoutOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Sign in to continue</DialogTitle>
-            <DialogDescription>Please sign in or create an account to complete your purchase.</DialogDescription>
-          </DialogHeader>
-          <div className="grid gap-4 py-4">
-            <div className="grid gap-2">
-              <Label htmlFor="email">Email</Label>
-              <Input id="email" type="email" placeholder="Enter your email" />
-            </div>
-            <div className="grid gap-2">
-              <Label htmlFor="password">Password</Label>
-              <Input id="password" type="password" placeholder="Enter your password" />
-            </div>
-          </div>
-          <DialogFooter className="flex flex-col sm:flex-row gap-2">
-            <Button variant="outline" className="sm:flex-1" onClick={() => setIsCheckoutOpen(false)}>
-              Create Account
-            </Button>
-            <Button
-              className="sm:flex-1"
-              onClick={() => {
-                setIsLoggedIn(true)
-                setIsCheckoutOpen(false)
-                // Proceed with checkout
-                toast({
-                  title: "Order Placed!",
-                  description: "Your order has been successfully placed.",
-                })
-                clearCart()
-              }}
-            >
-              Sign In & Checkout
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
     </div>
   )
 }
-
-// Import ShoppingCart icon for empty cart state
-import { ShoppingCart } from "lucide-react"
-
