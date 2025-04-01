@@ -81,29 +81,30 @@ export default function CheckoutPage() {
             </CardContent>
             <CardFooter className="flex flex-col">
               {isClient && (
-                <PayPalScriptProvider options={{ clientId: "test" }}>
+                <PayPalScriptProvider options={{ clientId: "AZz1Rm-UFpfhQNhvTBWUMFVuFGKdmMeY-fPkcdDe7FpgU2o1G4n33frFvsBolbStXvOmfZcY_vSXi_XL" }}>
                   <PayPalButtons
                     style={{ layout: "vertical" }}
-                    createOrder={(data, actions) => {
-                      return actions.order.create({
-                        purchase_units: [
-                          {
-                            amount: {
-                              value: total.toString(),
-                            },
-                          },
-                        ],
+                    createOrder={async (data, actions) => {
+                      return await actions.order.create({
+                        purchase_units: [{ amount: { value: total.toString() } }],
                       })
                     }}
-                    onApprove={(data, actions) => {
-                      return actions.order.capture().then((details) => {
-                        alert("Transaction completed by " + details.payer.name.given_name)
-                      })
+                    onApprove={async (data, actions) => {
+                      return await actions.order.capture()
+                        .then((details) => {
+                          alert("Transaction completed by " + details.payer.name.given_name)
+                        })
+                        .catch((error) => {
+                          console.error("Payment failed:", error);
+                          alert("Payment failed. Please try again.");
+                        });
                     }}
                   />
                 </PayPalScriptProvider>
               )}
-              <Button className="w-full mt-4">Complete Order</Button>
+              <Button className="w-full mt-4" onClick={() => document.querySelector("iframe")?.contentWindow?.document.querySelector("button")?.click()}>
+                Complete Order
+              </Button>
             </CardFooter>
           </Card>
         </div>
@@ -111,4 +112,3 @@ export default function CheckoutPage() {
     </div>
   )
 }
-
