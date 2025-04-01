@@ -1,119 +1,172 @@
-// pages/results.js
-"use client"
+import React, { useState } from "react";
+import { useRouter } from "next/router";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Label } from "@/components/ui/label";
+import { Progress } from "@/components/ui/progress";
 
-import React, { useState, useEffect } from "react"
-import { useSearchParams } from "next/navigation"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { ShoppingCart, ArrowRight } from "lucide-react"
-import Image from "next/image"
-import Link from "next/link"
-import { useCart } from "@/context/CartContext"
+// 1. Quiz Questions
+const questions = [
+  {
+    id: 1,
+    question: "How would you describe your energy level right now?",
+    options: [
+      { id: "a", text: "Very low, I feel drained", mood: "sad" },
+      { id: "b", text: "Relaxed and peaceful", mood: "calm" },
+      { id: "c", text: "Excited and full of energy", mood: "energetic" },
+      { id: "d", text: "Content and positive", mood: "happy" },
+    ],
+  },
+  {
+    id: 2,
+    question: "What kind of activity appeals to you most right now?",
+    options: [
+      { id: "a", text: "Resting or sleeping", mood: "sad" },
+      { id: "b", text: "Meditation or reading", mood: "calm" },
+      { id: "c", text: "Exercise or dancing", mood: "energetic" },
+      { id: "d", text: "Socializing or creative projects", mood: "happy" },
+    ],
+  },
+  {
+    id: 3,
+    question: "What's your current stress level?",
+    options: [
+      { id: "a", text: "Overwhelmed", mood: "sad" },
+      { id: "b", text: "Minimal stress", mood: "calm" },
+      { id: "c", text: "Positive stress/excitement", mood: "energetic" },
+      { id: "d", text: "Balanced", mood: "happy" },
+    ],
+  },
+];
 
-// Mock product data based on mood
-const moodProducts = {
-  happy: [
-    { id: 1, name: "Celebration Box", price: 39.99, image: "/Cele.jpg", description: "A curated box of treats to celebrate good moments." },
-    { id: 2, name: "Gratitude Journal", price: 14.99, image: "/jo.webp", description: "Record your daily moments of joy and gratitude." },
-    { id: 3, name: "Party Lights", price: 24.99, image: "/pl.jpg", description: "Colorful LED lights to enhance your happy atmosphere." },
-    { id: 4, name: "Upbeat Playlist Subscription", price: 9.99, image: "/uw.jpeg", description: "Access to curated playlists that boost your mood." },
-  ],
-  calm: [
-    { id: 5, name: "Calming Tea Set", price: 24.99, image: "/tea.jpg", description: "A selection of herbal teas to help you relax and unwind." },
-    { id: 6, name: "Aromatherapy Diffuser", price: 34.99, image: "/benefits-of-diffusers.webp", description: "Essential oil diffuser with calming scents." },
-    { id: 7, name: "Meditation Cushion", price: 29.99, image: "/cu.webp", description: "Comfortable cushion for your meditation practice." },
-    { id: 8, name: "Sound Machine", price: 19.99, image: "/sm.jpg", description: "Create a peaceful environment with nature sounds." },
-  ],
-  sad: [
-    { id: 9, name: "Comfort Blanket", price: 34.99, image: "/blanket.jpg", description: "A soft, weighted blanket for those days when you need extra comfort." },
-    { id: 10, name: "Self-Care Box", price: 44.99, image: "/gift.jpg", description: "A collection of items to help you practice self-care." },
-    { id: 11, name: "Mood-Boosting Lamp", price: 49.99, image: "/lamp.jpeg", description: "Light therapy lamp to help improve your mood." },
-    { id: 12, name: "Comforting Playlist Subscription", price: 9.99, image: "/cmu.jpg", description: "Access to music that provides comfort and support." },
-  ],
-  energetic: [
-    { id: 13, name: "Energizing Fitness Kit", price: 49.99, image: "/kit.png", description: "Everything you need for a quick workout to boost your energy." },
-    { id: 14, name: "Protein Snack Box", price: 29.99, image: "/1.jpeg", description: "Healthy snacks to fuel your active lifestyle." },
-    { id: 15, name: "Wireless Earbuds", price: 59.99, image: "/2.jpeg", description: "High-quality earbuds for your energetic music or podcasts." },
-    { id: 16, name: "Productivity Planner", price: 19.99, image: "/3.jpg", description: "Plan your day efficiently and channel your energy." },
-  ],
-}
+// 2. MoodQuiz Component
+const MoodQuiz = ({ onComplete }: { onComplete: () => void }) => {
+  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [answers, setAnswers] = useState<string[]>([]);
+  const [selectedOption, setSelectedOption] = useState<string | null>(null);
 
-// Mood descriptions and titles
-const moodDescriptions = {
-  happy: "You're in a positive and joyful mood! Here are some products to celebrate and enhance your happiness.",
-  calm: "You're feeling peaceful and relaxed. These products can help maintain your tranquil state of mind.",
-  sad: "You might be feeling down right now. These products are designed to provide comfort and support.",
-  energetic: "You're full of energy and ready for action! These products can help channel your enthusiasm.",
-}
+  const handleNext = () => {
+    if (selectedOption) {
+      const newAnswers = [...answers, selectedOption];
+      setAnswers(newAnswers);
 
-const moodTitles = {
-  happy: "Happy & Joyful",
-  calm: "Calm & Peaceful",
-  sad: "Looking for Comfort",
-  energetic: "Energetic & Active",
-}
-
-export default function ResultsPage() {
-  const searchParams = useSearchParams()
-  const { addToCart } = useCart() // Cart context to manage cart actions
-  const [mood, setMood] = useState<string>("happy")
-  const [products, setProducts] = useState<any[]>([])
-
-  useEffect(() => {
-    const moodParam = searchParams.get("mood")
-    if (moodParam && Object.keys(moodProducts).includes(moodParam)) {
-      setMood(moodParam)
-      setProducts(moodProducts[moodParam as keyof typeof moodProducts])
-    } else {
-      // Default to happy if no valid mood is provided
-      setProducts(moodProducts.happy)
+      if (currentQuestion < questions.length - 1) {
+        setCurrentQuestion(currentQuestion + 1);
+        setSelectedOption(null);
+      } else {
+        // Finish quiz and move to the product page
+        onComplete();
+      }
     }
-  }, [searchParams])
+  };
+
+  const progress = ((currentQuestion + 1) / questions.length) * 100;
+  const question = questions[currentQuestion];
 
   return (
-    <div className="container mx-auto py-12 px-4">
-      <div className="max-w-4xl mx-auto mb-12 text-center">
-        <Badge className="mb-4 text-lg px-3 py-1">{moodTitles[mood as keyof typeof moodTitles]}</Badge>
-        <h1 className="text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl mb-4">
-          Your Personalized Recommendations
-        </h1>
-        <p className="text-gray-500 md:text-xl dark:text-gray-400 max-w-[700px] mx-auto">
-          {moodDescriptions[mood as keyof typeof moodDescriptions]}
-        </p>
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {products.map((product) => (
-          <Card key={product.id} className="overflow-hidden">
-            <div className="relative h-48 w-full">
-              <Image src={product.image || "/placeholder.svg"} alt={product.name} fill className="object-cover" />
+    <div className="container max-w-4xl mx-auto py-12 px-4">
+      <Card className="w-full">
+        <CardHeader>
+          <CardTitle className="text-2xl">Mood Quiz</CardTitle>
+          <CardDescription>
+            Question {currentQuestion + 1} of {questions.length}
+          </CardDescription>
+          <Progress value={progress} className="h-2 mt-2" />
+        </CardHeader>
+        <CardContent className="pt-6">
+          <h3 className="text-xl font-medium mb-4">{question.question}</h3>
+          <RadioGroup value={selectedOption || ""} onValueChange={setSelectedOption}>
+            <div className="grid gap-4">
+              {question.options.map((option) => (
+                <div
+                  key={option.id}
+                  className="flex items-center space-x-2 border p-4 rounded-lg hover:bg-muted/50 cursor-pointer"
+                >
+                  <RadioGroupItem value={option.mood} id={option.id} />
+                  <Label htmlFor={option.id} className="flex-1 cursor-pointer">
+                    {option.text}
+                  </Label>
+                </div>
+              ))}
             </div>
-            <CardHeader className="p-4 pb-0">
-              <CardTitle className="text-lg">{product.name}</CardTitle>
-              <CardDescription className="text-sm">{product.description}</CardDescription>
-            </CardHeader>
-            <CardContent className="p-4 pt-2">
-              <p className="font-bold">${product.price.toFixed(2)}</p>
-            </CardContent>
-            <CardFooter className="p-4 pt-0">
-              <Button className="w-full" onClick={() => addToCart(product)}>
-                <ShoppingCart className="mr-2 h-4 w-4" />
-                Add to Cart
-              </Button>
-            </CardFooter>
-          </Card>
-        ))}
-      </div>
-
-      <div className="mt-12 text-center">
-        <Link href="/products">
-          <Button size="lg">
-            Browse All Products
-            <ArrowRight className="ml-2 h-4 w-4" />
+          </RadioGroup>
+        </CardContent>
+        <CardFooter className="flex justify-between">
+          <Button
+            variant="outline"
+            onClick={() => {
+              if (currentQuestion > 0) {
+                setCurrentQuestion(currentQuestion - 1);
+                setSelectedOption(answers[currentQuestion - 1] || null);
+                setAnswers(answers.slice(0, -1));
+              }
+            }}
+            disabled={currentQuestion === 0}
+          >
+            Previous
           </Button>
-        </Link>
+          <Button onClick={handleNext} disabled={!selectedOption}>
+            {currentQuestion < questions.length - 1 ? "Next" : "See Results"}
+          </Button>
+        </CardFooter>
+      </Card>
+    </div>
+  );
+};
+
+// 3. Product Page Component (Generic Product Page)
+const ProductPage = () => {
+  return (
+    <div className="container mx-auto py-12 px-4">
+      <h2 className="text-2xl font-semibold">Our Products</h2>
+      <p>Explore our range of products, carefully selected to suit a variety of moods and preferences!</p>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-6">
+        {/* Product Card Example */}
+        <div className="border p-4 rounded-lg">
+          <h3 className="text-xl font-medium">Comfort Blanket</h3>
+          <p>A soft blanket to keep you cozy during cold nights.</p>
+          <p>Price: $20.00</p>
+          <Button onClick={() => alert("Product added to cart!")}>Add to Cart</Button>
+        </div>
+        {/* More products */}
+        <div className="border p-4 rounded-lg">
+          <h3 className="text-xl font-medium">Meditation Kit</h3>
+          <p>Everything you need to create a peaceful meditation space.</p>
+          <p>Price: $35.00</p>
+          <Button onClick={() => alert("Product added to cart!")}>Add to Cart</Button>
+        </div>
+        <div className="border p-4 rounded-lg">
+          <h3 className="text-xl font-medium">Fitness Equipment</h3>
+          <p>Get active and energize yourself with this fitness set.</p>
+          <p>Price: $50.00</p>
+          <Button onClick={() => alert("Product added to cart!")}>Add to Cart</Button>
+        </div>
       </div>
     </div>
-  )
-}
+  );
+};
+
+// 4. Combined Component
+const MoodQuizAndProductPage = () => {
+  const router = useRouter();
+  const [quizCompleted, setQuizCompleted] = useState(false);
+
+  const handleQuizComplete = () => {
+    setQuizCompleted(true);
+    // After the quiz is completed, redirect to the product page
+    router.push(`/product`);
+  };
+
+  return (
+    <div>
+      {quizCompleted ? (
+        <ProductPage />
+      ) : (
+        <MoodQuiz onComplete={handleQuizComplete} />
+      )}
+    </div>
+  );
+};
+
+export default MoodQuizAndProductPage;
