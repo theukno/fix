@@ -23,7 +23,7 @@ export default function CheckoutPage() {
 
   // Redirect to the gateway page when the user clicks "Complete Purchase"
   const handleCompletePurchase = () => {
-    router.push("/paypal"); // Redirect to the payment gateway page
+    router.push("/appy/checkout/paypal"); // Redirect to the payment gateway page
   };
 
   return (
