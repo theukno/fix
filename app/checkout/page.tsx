@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { PayPalScriptProvider, PayPalButtons } from "@paypal/react-paypal-js";
 import { Button } from "@/components/ui/button";
@@ -47,11 +47,10 @@ export default function CheckoutPage() {
     });
   };
 
-  useEffect(() => {
-    if (cartItems.length === 0 && !isComplete) {
-      router.push("/cart");
-    }
-  }, [cartItems, isComplete, router]);
+  if (cartItems.length === 0 && !isComplete) {
+    router.push("/cart");
+    return null;
+  }
 
   return (
     <PayPalScriptProvider options={{ "client-id": "YOUR_REAL_PAYPAL_CLIENT_ID", currency: "USD" }}>
