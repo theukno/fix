@@ -1,7 +1,7 @@
 "use client"; // ✅ Ensure this is at the top
 
 import React, { useState } from "react";
-import { useRouter } from "next/navigation"; // ✅ Use next/navigation for App Router
+import { usePathname, useSearchParams, useRouter } from "next/navigation"; // ✅ Correct imports
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
@@ -42,7 +42,6 @@ const questions = [
   },
 ];
 
-// 2. MoodQuiz Component
 const MoodQuiz = ({ onComplete }: { onComplete: (mood: string) => void }) => {
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [answers, setAnswers] = useState<string[]>([]);
@@ -128,43 +127,13 @@ const MoodQuiz = ({ onComplete }: { onComplete: (mood: string) => void }) => {
   );
 };
 
-// 3. Product Page Component
-const ProductPage = ({ mood }: { mood: string }) => {
-  const getProduct = (mood: string) => {
-    switch (mood) {
-      case "sad":
-        return { id: 1, name: "Comfort Blanket", description: "A soft blanket to keep you cozy.", price: 20.00 };
-      case "calm":
-        return { id: 2, name: "Meditation Kit", description: "A set for peaceful meditation.", price: 35.00 };
-      case "energetic":
-        return { id: 3, name: "Fitness Equipment", description: "Equipment to get your energy flowing.", price: 50.00 };
-      case "happy":
-        return { id: 4, name: "Creative Set", description: "A set for your next fun project.", price: 30.00 };
-      default:
-        return { id: 5, name: "Mystery Product", description: "A product tailored to your mood.", price: 25.00 };
-    }
-  };
-
-  const product = getProduct(mood);
-
-  return (
-    <div className="container mx-auto py-12 px-4">
-      <h2 className="text-2xl font-semibold">{product.name}</h2>
-      <p>{product.description}</p>
-      <p>Price: ${product.price.toFixed(2)}</p>
-      <Button onClick={() => alert("Product added to cart!")}>Add to Cart</Button>
-    </div>
-  );
-};
-
-// 4. Combined Component
 const MoodQuizAndProductPage = () => {
   const router = useRouter();
   const [mood, setMood] = useState<string | null>(null);
 
   const handleQuizComplete = (dominantMood: string) => {
     setMood(dominantMood);
-    // ✅ Corrected router push
+    // ✅ Redirects correctly in Next.js 13+ (App Router)
     router.push(`/product?mood=${dominantMood}`);
   };
 
@@ -173,7 +142,7 @@ const MoodQuizAndProductPage = () => {
       {mood === null ? (
         <MoodQuiz onComplete={handleQuizComplete} />
       ) : (
-        <ProductPage mood={mood} />
+        <p>Loading results...</p>
       )}
     </div>
   );
