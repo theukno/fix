@@ -14,7 +14,7 @@ export default function ManageAccount() {
     const checkSession = () => {
       const email = localStorage.getItem("sessionEmail")
       if (!email) {
-        router.push("/account") // Redirect to login page if session is not valid
+        router.push("/account.page.tsx") // Redirect to login page if session is not valid
       } else {
         setUser({ email })
       }
