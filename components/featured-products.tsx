@@ -18,7 +18,7 @@ const featuredProducts = [
     id: 2,
     name: "Energizing Fitness Kit",
     price: 49.99,
-    image: "/kit.jpg?height=200&width=200",
+    image: "/kit.png?height=200&width=200",
     mood: "Energetic",
     description: "Everything you need for a quick workout to boost your energy.",
   },
