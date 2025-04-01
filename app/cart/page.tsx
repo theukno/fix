@@ -36,10 +36,10 @@ export default function CartPage() {
     console.log("Checkout clicked!"); // Debug log to track click
     if (!isLoggedIn) {
       console.log("User not logged in, redirecting to login page..."); // Debug log for redirection
-      router.push("/app/account/page.tsx"); // Redirect to login page (remove `.tsx`)
+      router.push("/app/account/page"); // Redirect to login page (remove `.tsx`)
     } else {
       console.log("User logged in, redirecting to payment page..."); // Debug log for routing
-      router.push("/app/checkout/page.tsx"); // Redirect to payment page (remove `.tsx`)
+      router.push("/app/checkout/page"); // Redirect to payment page (remove `.tsx`)
     }
   }
 
