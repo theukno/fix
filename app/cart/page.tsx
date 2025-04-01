@@ -5,7 +5,6 @@ import { useCart } from "@/components/cart-provider"
 import { useRouter } from "next/navigation" // Import useRouter
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
 import { Minus, Plus, Trash2, CreditCard, ShoppingCart } from "lucide-react"
 import Image from "next/image"
 import Link from "next/link"
@@ -24,14 +23,17 @@ export default function CartPage() {
   const { cartItems, removeFromCart, updateQuantity, clearCart, subtotal } = useCart()
   const { toast } = useToast()
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false)
-  const [isLoggedIn, setIsLoggedIn] = useState(false)
+  const [isLoggedIn, setIsLoggedIn] = useState(false) // Placeholder for login state
   const router = useRouter() // Initialize router
 
   const handleCheckout = () => {
+    console.log("Checkout clicked!"); // Debug log to track click
     if (!isLoggedIn) {
-      setIsCheckoutOpen(true)
+      console.log("User not logged in, opening dialog..."); // Debug log for dialog
+      setIsCheckoutOpen(true);
     } else {
-      router.push("/payment") // Redirect to payment page
+      console.log("User logged in, redirecting to payment page..."); // Debug log for routing
+      router.push("/payment"); // Redirect to payment page
     }
   }
 
@@ -131,6 +133,24 @@ export default function CartPage() {
           </Card>
         </div>
       </div>
+
+      {/* Checkout Dialog */}
+      {isCheckoutOpen && (
+        <Dialog open={isCheckoutOpen} onOpenChange={(open) => setIsCheckoutOpen(open)}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Login Required</DialogTitle>
+              <DialogDescription>
+                You need to log in before proceeding to checkout.
+              </DialogDescription>
+            </DialogHeader>
+            <DialogFooter>
+              <Button onClick={() => setIsCheckoutOpen(false)}>Close</Button>
+              <Button variant="outline" onClick={() => router.push("/login")}>Login</Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      )}
     </div>
   )
 }
