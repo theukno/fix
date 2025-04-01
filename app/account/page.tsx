@@ -47,7 +47,7 @@ export default function AccountPage() {
       title: "Login Successful",
       description: "You are now logged in.",
     })
-    router.push("/account/manage.tsx") // Redirect to account management page after login
+    router.push("/app/layout.tsx") // Redirect to account management page after login
   }
 
   const handleSignup = async (e: React.FormEvent) => {
