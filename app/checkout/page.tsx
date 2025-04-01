@@ -12,7 +12,7 @@ export default function CheckoutPage() {
   useEffect(() => {
     if (typeof window !== "undefined" && !window.paypal) {
       const script = document.createElement("script");
-      script.src = "https://www.paypal.com/sdk/js?client-id=YOUR_PAYPAL_CLIENT_ID";
+      script.src = "https://www.paypal.com/sdk/js?client-id=AZz1Rm-UFpfhQNhvTBWUMFVuFGKdmMeY-fPkcdDe7FpgU2o1G4n33frFvsBolbStXvOmfZcY_vSXi_XL";
       script.async = true;
       script.onload = () => setIsPayPalLoaded(true);
       document.body.appendChild(script);
