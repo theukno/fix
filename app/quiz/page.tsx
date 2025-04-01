@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState } from 'react';
+import { PayPalScriptProvider, PayPalButtons } from "@paypal/react-paypal-js";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
@@ -9,7 +10,6 @@ import { useRouter } from "next/navigation";
 // 1. Cart Context for managing the cart globally
 const CartContext = createContext<any>(null);
 
-// CartProvider component to wrap around the application
 export const CartProvider = ({ children }: { children: React.ReactNode }) => {
   const [cart, setCart] = useState<any[]>([]);
 
@@ -24,7 +24,6 @@ export const CartProvider = ({ children }: { children: React.ReactNode }) => {
   );
 };
 
-// Custom hook to use cart in any component
 export const useCart = () => useContext(CartContext);
 
 // 2. Mood Quiz Component
@@ -62,7 +61,7 @@ const questions = [
   // Add more questions if needed
 ];
 
-const MoodQuiz = () => {
+const MoodQuiz = ({ onComplete }: { onComplete: (mood: string) => void }) => {
   const router = useRouter();
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [answers, setAnswers] = useState<string[]>([]);
@@ -88,8 +87,8 @@ const MoodQuiz = () => {
           ["", 0]
         )[0];
 
-        // Redirect to product page with mood
-        router.push(`/product?mood=${dominantMood}`);
+        // Pass the dominant mood to the parent component
+        onComplete(dominantMood);
       }
     }
   };
@@ -148,35 +147,84 @@ const MoodQuiz = () => {
   );
 };
 
-// 3. Product Page with "Add to Cart"
-const ProductPage = () => {
+// 3. Product Page with "Add to Cart" and PayPal Payment Integration
+const ProductPage = ({ mood }: { mood: string }) => {
   const { addToCart } = useCart();
 
-  const product = {
-    name: 'Product based on mood',
-    description: 'This product matches your mood based on your quiz results.',
+  // Determine a product based on the mood
+  const getProduct = (mood: string) => {
+    switch (mood) {
+      case "sad":
+        return { name: "Comfort Blanket", description: "A soft blanket to keep you cozy.", price: 20.00 };
+      case "calm":
+        return { name: "Meditation Kit", description: "A set for peaceful meditation.", price: 35.00 };
+      case "energetic":
+        return { name: "Fitness Equipment", description: "Equipment to get your energy flowing.", price: 50.00 };
+      case "happy":
+        return { name: "Creative Set", description: "A set for your next fun project.", price: 30.00 };
+      default:
+        return { name: "Mystery Product", description: "A product tailored to your mood.", price: 25.00 };
+    }
   };
+
+  const product = getProduct(mood);
 
   const handleAddToCart = () => {
     addToCart(product);
-    alert('Product added to cart!');
+    alert("Product added to cart!");
   };
 
   return (
     <div className="container mx-auto py-12 px-4">
       <h2 className="text-2xl font-semibold">{product.name}</h2>
       <p>{product.description}</p>
+      <p>Price: ${product.price.toFixed(2)}</p>
       <Button onClick={handleAddToCart}>Add to Cart</Button>
+
+      {/* PayPal Payment Integration */}
+      <div className="mt-8">
+        <h3 className="text-xl mb-4">Proceed to Payment</h3>
+        <PayPalScriptProvider options={{ "client-id": "YOUR_PAYPAL_CLIENT_ID", currency: "USD" }}>
+          <PayPalButtons
+            style={{ layout: "vertical" }}
+            createOrder={(data, actions) => {
+              return actions.order.create({
+                purchase_units: [
+                  {
+                    amount: {
+                      value: product.price.toFixed(2),
+                    },
+                  },
+                ],
+              });
+            }}
+            onApprove={(data, actions) => {
+              return actions.order.capture().then((details: any) => {
+                alert("Transaction completed by " + details.payer.name.given_name);
+              });
+            }}
+          />
+        </PayPalScriptProvider>
+      </div>
     </div>
   );
 };
 
-// 4. Main App component to wrap with CartProvider
+// 4. Main App Component
 const App = () => {
+  const [mood, setMood] = useState<string | null>(null);
+
+  const handleQuizComplete = (dominantMood: string) => {
+    setMood(dominantMood);
+  };
+
   return (
     <CartProvider>
-      <MoodQuiz />
-      <ProductPage />
+      {mood === null ? (
+        <MoodQuiz onComplete={handleQuizComplete} />
+      ) : (
+        <ProductPage mood={mood} />
+      )}
     </CartProvider>
   );
 };
